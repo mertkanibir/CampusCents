@@ -11,6 +11,13 @@ struct BudgetInput: Sendable, Equatable {
             case .semester: return "Semester"
             }
         }
+
+        nonisolated var description: String {
+            switch self {
+            case .monthly: return "Track spending week by week"
+            case .semester: return "Plan by term (tuition 2–3x/year)"
+            }
+        }
     }
 
     enum HousingType: String, Sendable, Codable, CaseIterable {
@@ -23,6 +30,14 @@ struct BudgetInput: Sendable, Equatable {
             case .onCampus: return "On-Campus"
             case .offCampus: return "Off-Campus"
             case .commuter: return "Commuter"
+            }
+        }
+
+        nonisolated var description: String {
+            switch self {
+            case .onCampus: return "Dorm or university housing"
+            case .offCampus: return "Apartment or house"
+            case .commuter: return "Living at home"
             }
         }
     }

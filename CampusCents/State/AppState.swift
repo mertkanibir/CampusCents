@@ -93,6 +93,7 @@ final class AppState: ObservableObject {
 
     func completeOnboarding(with profile: StudentProfile) {
         self.profile = profile
+        categories = BudgetCategory.from(profile: profile)
         hasCompletedOnboarding = true
     }
 

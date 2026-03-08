@@ -49,6 +49,28 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         return letters.joined().uppercased().isEmpty ? "CC" : letters.joined().uppercased()
     }
 
+    static let emptyForOnboarding = StudentProfile(
+        id: UUID(),
+        name: "",
+        school: "",
+        term: "Spring \(Calendar.current.component(.year, from: Date()))",
+        monthlyIncome: 0,
+        investments: 0,
+        scholarshipsAid: 0,
+        tuition: 0,
+        rent: 0,
+        utilities: 0,
+        mealPlan: 0,
+        groceries: 0,
+        transportation: 0,
+        subscriptions: 0,
+        personal: 0,
+        savingsGoal: 0,
+        budgetStyle: .monthly,
+        housingType: .offCampus,
+        avatarData: nil
+    )
+
     static let sample = StudentProfile(
         id: UUID(),
         name: "Mike Lewis",
@@ -120,9 +142,9 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school = try container.decode(String.self, forKey: .school)
         term = try container.decode(String.self, forKey: .term)
         monthlyIncome = try container.decode(Double.self, forKey: .monthlyIncome)
-        investments = try container.decode(Double.self, forKey: .investments)
-        scholarshipsAid = try container.decode(Double.self, forKey: .scholarshipsAid)
-        tuition = try container.decode(Double.self, forKey: .tuition)
+        investments = try container.decodeIfPresent(Double.self, forKey: .investments) ?? 0
+        scholarshipsAid = try container.decodeIfPresent(Double.self, forKey: .scholarshipsAid) ?? 0
+        tuition = try container.decodeIfPresent(Double.self, forKey: .tuition) ?? 0
         rent = try container.decode(Double.self, forKey: .rent)
         utilities = try container.decode(Double.self, forKey: .utilities)
         mealPlan = try container.decode(Double.self, forKey: .mealPlan)

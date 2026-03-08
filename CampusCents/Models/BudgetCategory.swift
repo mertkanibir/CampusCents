@@ -74,6 +74,32 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         max(0, budget - spent)
     }
 
+    static func from(profile: StudentProfile) -> [BudgetCategory] {
+        let kinds: [Kind] = [.tuition, .aid, .rent, .utilities, .mealPlan, .groceries, .transportation, .subscriptions, .personal]
+        return kinds.map { kind in
+            let budget: Double
+            switch kind {
+            case .tuition: budget = profile.tuition
+            case .aid: budget = profile.scholarshipsAid
+            case .rent: budget = profile.rent
+            case .utilities: budget = profile.utilities
+            case .mealPlan: budget = profile.mealPlan
+            case .groceries: budget = profile.groceries
+            case .transportation: budget = profile.transportation
+            case .subscriptions: budget = profile.subscriptions
+            case .personal: budget = profile.personal
+            }
+            return BudgetCategory(
+                id: UUID(),
+                kind: kind,
+                name: kind.displayName,
+                budget: budget,
+                spent: 0,
+                color: .init(kind.tint)
+            )
+        }
+    }
+
     static let sample: [BudgetCategory] = [
         .init(id: UUID(), kind: .income, name: "Monthly Income", budget: 700, spent: 700, color: .init(Colors.mint)),
         .init(id: UUID(), kind: .investment, name: "Investments", budget: 200, spent: 0, color: .init(Colors.periwinkle)),

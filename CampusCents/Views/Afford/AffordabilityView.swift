@@ -204,7 +204,7 @@ struct AffordabilityView: View {
     }
 
     private var quickContextCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Label("Quick Context", systemImage: "waveform.path.ecg.rectangle")
                     .font(.headline.weight(.semibold))
@@ -223,9 +223,23 @@ struct AffordabilityView: View {
                 contextRow(title: "Housing mode", value: state.profile.housingType.displayName)
             }
 
-            Text("These reference values come from your saved profile and help explain why the affordability result looks the way it does.")
-                .font(.caption)
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+            Rectangle()
+                .fill(Color.primary.opacity(colorScheme == .dark ? 0.1 : 0.06))
+                .frame(height: 1)
+
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "info.circle.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Colors.blueMint)
+                    .padding(.top, 2)
+
+                Text("These values come from your saved profile and explain what the affordability result is based on.")
+                    .font(.caption)
+                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(12)
+            .background(Color.primary.opacity(colorScheme == .dark ? 0.07 : 0.04), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)

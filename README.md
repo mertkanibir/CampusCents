@@ -30,8 +30,9 @@ Open the project in Xcode and run it on an iOS simulator or device.
 - Profile [ ]
 - Insights rework [ ]
 - Add in major calculations to README or additional markdown [ ]
+- REDO budget page - lp [ ]
 
-- 
+  
 ## LOW PRIORITY
 - Have expenses show as (-) in activity and red text [ ]
 - Allow for additional income (+) and green [ ]

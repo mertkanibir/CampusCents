@@ -6,6 +6,18 @@ struct ImpactCard: View {
     let itemName: String
     let priceText: String
 
+    private var primaryText: Color {
+        colorScheme == .dark ? .white : .primary
+    }
+
+    private var secondaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.82) : Color.primary.opacity(0.72)
+    }
+
+    private var tertiaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.68) : Color.primary.opacity(0.56)
+    }
+
     @State private var service = AIService()
     @State private var response: AIResponse?
     @State private var availability: AIStatus = .frameworkUnavailable
@@ -27,7 +39,7 @@ struct ImpactCard: View {
                         .font(.headline.weight(.semibold))
                     Text("AI reflection on this purchase in your current setup")
                         .font(.caption)
-                        .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.68 : 0.56))
+                        .foregroundStyle(tertiaryText)
                 }
                 Spacer()
                 availabilityBadge
@@ -38,12 +50,12 @@ struct ImpactCard: View {
                     ProgressView()
                     Text("Generating AI reflection...")
                         .font(.subheadline)
-                        .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.76 : 0.62))
+                        .foregroundStyle(secondaryText)
                 }
             } else if let response {
                 Text(response.summary)
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.72))
+                    .foregroundStyle(secondaryText)
 
                 HStack(spacing: 10) {
                     if let impact = response.impact {
@@ -57,13 +69,13 @@ struct ImpactCard: View {
 
                 Text("This section translates the score into plain-language guidance based on your saved budget data.")
                     .font(.caption)
-                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+                    .foregroundStyle(tertiaryText)
 
                 if !response.suggestions.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Suggested next move")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+                            .foregroundStyle(tertiaryText)
                         ForEach(Array(response.suggestions.prefix(2).enumerated()), id: \.offset) { _, suggestion in
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: "sparkle")
@@ -72,7 +84,7 @@ struct ImpactCard: View {
                                     .padding(.top, 2)
                                 Text(suggestion)
                                     .font(.caption)
-                                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.76 : 0.64))
+                                    .foregroundStyle(secondaryText)
                             }
                         }
                     }
@@ -80,12 +92,12 @@ struct ImpactCard: View {
             } else {
                 Text("Enter an item and price to get a plain-language explanation of how this purchase could affect your budget.")
                     .font(.subheadline)
-                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.72 : 0.6))
+                    .foregroundStyle(secondaryText)
             }
 
             Text(availability.statusLabel)
                 .font(.caption2)
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.64 : 0.52))
+                .foregroundStyle(tertiaryText)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,10 +131,10 @@ struct ImpactCard: View {
     private var availabilityBadge: some View {
         Text(availability.isAvailable ? "On-device AI" : "Fallback AI")
             .font(.caption.weight(.semibold))
-            .foregroundStyle(availability.isAvailable ? Colors.mint : Colors.sun)
+            .foregroundStyle(colorScheme == .dark ? primaryText : (availability.isAvailable ? Colors.mint : Colors.sun))
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background((availability.isAvailable ? Colors.mint : Colors.sun).opacity(colorScheme == .dark ? 0.18 : 0.12), in: Capsule())
+            .background((availability.isAvailable ? Colors.mint : Colors.sun).opacity(colorScheme == .dark ? 0.28 : 0.12), in: Capsule())
     }
 
     private func impactTint(for impact: Impact) -> Color {
@@ -136,9 +148,9 @@ struct ImpactCard: View {
     private func impactPill(text: String, tint: Color) -> some View {
         Text(text)
             .font(.caption.weight(.semibold))
-            .foregroundStyle(tint)
+            .foregroundStyle(colorScheme == .dark ? primaryText : tint)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(tint.opacity(colorScheme == .dark ? 0.18 : 0.10), in: Capsule())
+            .background(tint.opacity(colorScheme == .dark ? 0.28 : 0.10), in: Capsule())
     }
 }

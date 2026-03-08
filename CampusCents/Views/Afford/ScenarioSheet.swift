@@ -5,6 +5,18 @@ struct ScenarioSheet: View {
     @EnvironmentObject var state: AppState
     @Environment(\.colorScheme) private var colorScheme
 
+    private var primaryText: Color {
+        colorScheme == .dark ? .white : .primary
+    }
+
+    private var secondaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.82) : Color.primary.opacity(0.72)
+    }
+
+    private var tertiaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.68) : Color.primary.opacity(0.56)
+    }
+
     private enum ScenarioPreset: String, CaseIterable {
         case housing = "Housing Shift"
         case subscriptions = "Subscriptions"
@@ -23,16 +35,17 @@ struct ScenarioSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Label("AI Scenario Compare", systemImage: "sparkles")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(Colors.periwinkle)
+                            .foregroundStyle(colorScheme == .dark ? primaryText : Colors.periwinkle)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Colors.periwinkle.opacity(colorScheme == .dark ? 0.2 : 0.12), in: Capsule())
+                            .background(Colors.periwinkle.opacity(colorScheme == .dark ? 0.3 : 0.12), in: Capsule())
 
                         Text("Explore a smarter alternative")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(primaryText)
                         Text("See how one strategic change could reshape your budget pressure.")
                             .font(.subheadline)
-                            .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.78 : 0.64))
+                            .foregroundStyle(secondaryText)
                     }
 
                     VStack(alignment: .leading, spacing: 14) {
@@ -48,13 +61,13 @@ struct ScenarioSheet: View {
                                 ProgressView()
                                 Text("Running AI comparison...")
                                     .font(.subheadline)
-                                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.76 : 0.62))
+                                    .foregroundStyle(secondaryText)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         } else if let response {
                             Text(response.summary)
                                 .font(.subheadline.weight(.medium))
-                                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.72))
+                                .foregroundStyle(secondaryText)
 
                             VStack(alignment: .leading, spacing: 10) {
                                 ForEach(response.points, id: \.self) { point in
@@ -65,18 +78,18 @@ struct ScenarioSheet: View {
                                             .padding(.top, 2)
                                         Text(point)
                                             .font(.caption)
-                                            .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.76 : 0.64))
+                                            .foregroundStyle(secondaryText)
                                     }
                                 }
                             }
 
                             Text(availability.statusLabel)
                                 .font(.caption2)
-                                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.64 : 0.52))
+                                .foregroundStyle(tertiaryText)
                         } else {
                             Text("Loading scenario insight...")
                                 .font(.subheadline)
-                                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.72 : 0.6))
+                                .foregroundStyle(secondaryText)
                         }
                     }
                     .padding(18)

@@ -9,6 +9,22 @@ struct AffordabilityView: View {
     private let primaryCardCornerRadius: CGFloat = 26
     private let secondaryCardCornerRadius: CGFloat = 24
 
+    private var primaryText: Color {
+        colorScheme == .dark ? .white : .primary
+    }
+
+    private var secondaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.84) : Color.primary.opacity(0.68)
+    }
+
+    private var tertiaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.72) : Color.primary.opacity(0.58)
+    }
+
+    private var quietText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.64) : Color.primary.opacity(0.52)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -22,7 +38,7 @@ struct AffordabilityView: View {
                                     .font(.title3.weight(.bold))
                                 Text("Enter an item and price to see how it fits into your current monthly budget.")
                                     .font(.subheadline)
-                                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.78 : 0.66))
+                                    .foregroundStyle(secondaryText)
                             }
                             Spacer()
                             Button {
@@ -32,10 +48,10 @@ struct AffordabilityView: View {
                                     .font(.caption.weight(.semibold))
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
-                                    .background(Colors.periwinkle.opacity(colorScheme == .dark ? 0.25 : 0.14), in: Capsule())
+                                    .background(Colors.periwinkle.opacity(colorScheme == .dark ? 0.35 : 0.14), in: Capsule())
                             }
                             .buttonStyle(.plain)
-                            .foregroundStyle(Colors.periwinkle)
+                            .foregroundStyle(colorScheme == .dark ? Color.white : Colors.periwinkle)
                         }
 
                         VStack(spacing: 14) {
@@ -147,9 +163,9 @@ struct AffordabilityView: View {
                     LinearGradient(
                         colors: colorScheme == .dark
                             ? [
-                                Colors.periwinkle.opacity(0.34),
-                                Colors.blueMint.opacity(0.18),
-                                Color.black.opacity(0.26)
+                                Color(red: 0.17, green: 0.26, blue: 0.52),
+                                Color(red: 0.06, green: 0.24, blue: 0.30),
+                                Color(red: 0.04, green: 0.08, blue: 0.18)
                             ]
                             : [
                                 Colors.periwinkle.opacity(0.22),
@@ -164,7 +180,7 @@ struct AffordabilityView: View {
                     RoundedRectangle(cornerRadius: 30, style: .continuous)
                         .stroke(
                             LinearGradient(
-                                colors: [Colors.periwinkle.opacity(0.7), Colors.blueMint.opacity(0.4)],
+                                colors: [Colors.periwinkle.opacity(colorScheme == .dark ? 0.9 : 0.7), Colors.blueMint.opacity(colorScheme == .dark ? 0.7 : 0.4)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -173,26 +189,47 @@ struct AffordabilityView: View {
                 }
 
             Circle()
-                .fill(Colors.periwinkle.opacity(colorScheme == .dark ? 0.22 : 0.16))
+                .fill(Colors.blueMint.opacity(colorScheme == .dark ? 0.22 : 0.16))
                 .frame(width: 160, height: 160)
-                .blur(radius: 18)
-                .offset(x: 180, y: -25)
+                .blur(radius: 22)
+                .offset(x: 180, y: -20)
+
+            Circle()
+                .fill(Colors.periwinkle.opacity(colorScheme == .dark ? 0.20 : 0.1))
+                .frame(width: 220, height: 220)
+                .blur(radius: 30)
+                .offset(x: -40, y: 100)
 
             VStack(alignment: .leading, spacing: 16) {
                 Label("AI Affordability Engine", systemImage: "sparkles")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Colors.periwinkle)
+                    .foregroundStyle(colorScheme == .dark ? Color.white : Colors.periwinkle)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(Colors.periwinkle.opacity(colorScheme == .dark ? 0.2 : 0.12), in: Capsule())
+                    .background(
+                        colorScheme == .dark
+                            ? Color.white.opacity(0.12)
+                            : Colors.periwinkle.opacity(0.12),
+                        in: Capsule()
+                    )
+                    .overlay {
+                        Capsule()
+                            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : Colors.periwinkle.opacity(0.16), lineWidth: 1)
+                    }
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Check if a purchase fits before you buy.")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(primaryText)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("This screen turns one price into a quick budget-fit read, then adds an AI explanation so the result is easier to understand.")
                         .font(.subheadline)
-                        .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.8 : 0.68))
+                        .foregroundStyle(secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 12) {
                     metricTile(title: "Remaining", value: state.remaining.currency, tint: Colors.mint)
@@ -213,10 +250,10 @@ struct AffordabilityView: View {
                 Spacer()
                 Text(state.profile.budgetStyle.displayName)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Colors.blueMint)
+                    .foregroundStyle(colorScheme == .dark ? Color.white : Colors.blueMint)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Colors.blueMint.opacity(colorScheme == .dark ? 0.2 : 0.12), in: Capsule())
+                    .background(Colors.blueMint.opacity(colorScheme == .dark ? 0.26 : 0.12), in: Capsule())
             }
 
             VStack(alignment: .leading, spacing: 10) {
@@ -237,11 +274,11 @@ struct AffordabilityView: View {
 
                 Text("These values come from your saved profile and explain what the affordability result is based on.")
                     .font(.caption)
-                    .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+                    .foregroundStyle(quietText)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(12)
-            .background(Color.primary.opacity(colorScheme == .dark ? 0.07 : 0.04), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(Color.primary.opacity(colorScheme == .dark ? 0.10 : 0.04), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -264,18 +301,19 @@ struct AffordabilityView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.72 : 0.6))
+                .foregroundStyle(colorScheme == .dark ? Color.white.opacity(0.76) : Color.primary.opacity(0.6))
             Text(value)
                 .font(.headline.weight(.bold))
+                .foregroundStyle(primaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(colorScheme == .dark ? 0.22 : 0.12), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(tint.opacity(colorScheme == .dark ? 0.28 : 0.12), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(tint.opacity(colorScheme == .dark ? 0.42 : 0.3), lineWidth: 1)
+                .stroke(tint.opacity(colorScheme == .dark ? 0.58 : 0.3), lineWidth: 1)
         }
     }
 
@@ -283,21 +321,21 @@ struct AffordabilityView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.72 : 0.56))
+                .foregroundStyle(tertiaryText)
             Text(value)
                 .font(.headline.weight(.bold))
-                .foregroundStyle(tint)
+                .foregroundStyle(colorScheme == .dark ? primaryText : tint)
             Text(detail)
                 .font(.caption2)
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.62 : 0.5))
+                .foregroundStyle(quietText)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(colorScheme == .dark ? 0.18 : 0.09), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(tint.opacity(colorScheme == .dark ? 0.24 : 0.09), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(tint.opacity(colorScheme == .dark ? 0.34 : 0.2), lineWidth: 1)
+                .stroke(tint.opacity(colorScheme == .dark ? 0.48 : 0.2), lineWidth: 1)
         }
     }
 
@@ -305,6 +343,7 @@ struct AffordabilityView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(primaryText)
 
             ForEach(Array(points.enumerated()), id: \.offset) { _, point in
                 HStack(alignment: .top, spacing: 8) {
@@ -314,16 +353,16 @@ struct AffordabilityView: View {
                         .padding(.top, 2)
                     Text(point)
                         .font(.caption)
-                        .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.74 : 0.62))
+                        .foregroundStyle(tertiaryText)
                 }
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.04), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Color.primary.opacity(colorScheme == .dark ? 0.10 : 0.04), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.1 : 0.06), lineWidth: 1)
+                .stroke(Color.primary.opacity(colorScheme == .dark ? 0.14 : 0.06), lineWidth: 1)
         }
     }
 
@@ -337,21 +376,22 @@ struct AffordabilityView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label(title, systemImage: systemImage)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.74 : 0.58))
+                .foregroundStyle(tertiaryText)
 
             TextField(placeholder, text: value)
                 .keyboardType(keyboardType)
                 .textFieldStyle(.plain)
                 .font(.body.weight(.medium))
+                .foregroundStyle(primaryText)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color.white.opacity(0.9))
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.12) : Color.white.opacity(0.9))
                 )
                 .overlay {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.primary.opacity(colorScheme == .dark ? 0.12 : 0.08), lineWidth: 1)
+                        .stroke(Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.08), lineWidth: 1)
                 }
         }
     }
@@ -359,10 +399,11 @@ struct AffordabilityView: View {
     private func contextRow(title: String, value: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.74 : 0.62))
+                .foregroundStyle(secondaryText)
             Spacer()
             Text(value)
                 .fontWeight(.semibold)
+                .foregroundStyle(primaryText)
                 .multilineTextAlignment(.trailing)
         }
         .font(.subheadline)

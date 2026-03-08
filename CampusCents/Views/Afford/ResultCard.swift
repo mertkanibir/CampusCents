@@ -4,6 +4,18 @@ struct ResultCard: View {
     @Environment(\.colorScheme) private var colorScheme
     let result: AffordabilityResult
 
+    private var primaryText: Color {
+        colorScheme == .dark ? .white : .primary
+    }
+
+    private var secondaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.82) : Color.primary.opacity(0.72)
+    }
+
+    private var tertiaryText: Color {
+        colorScheme == .dark ? Color.white.opacity(0.68) : Color.primary.opacity(0.54)
+    }
+
     var body: some View {
         let ui: (title: String, accent: Color, icon: String, message: String, meter: Double) = {
             switch result {
@@ -19,14 +31,14 @@ struct ResultCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Label("AI Affordability Verdict", systemImage: "sparkles")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(ui.accent)
+                        .foregroundStyle(colorScheme == .dark ? primaryText : ui.accent)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(ui.accent.opacity(colorScheme == .dark ? 0.2 : 0.12), in: Capsule())
+                        .background(ui.accent.opacity(colorScheme == .dark ? 0.3 : 0.12), in: Capsule())
 
                     Text(ui.title)
                         .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(primaryText)
                 }
 
                 Spacer()
@@ -48,18 +60,18 @@ struct ResultCard: View {
 
             Text(ui.message)
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.82 : 0.72))
+                .foregroundStyle(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("Higher budget fit means this purchase takes a smaller share of your flexible budget.")
                 .font(.caption)
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+                .foregroundStyle(tertiaryText)
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Budget Comfort")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.56))
+                        .foregroundStyle(tertiaryText)
                     Spacer()
                     Text(comfortLabel(for: ui.meter))
                         .font(.caption.weight(.semibold))
@@ -93,7 +105,7 @@ struct ResultCard: View {
                     .fill(
                         LinearGradient(
                             colors: colorScheme == .dark
-                                ? [ui.accent.opacity(0.22), Color.white.opacity(0.04)]
+                                ? [ui.accent.opacity(0.26), Color.white.opacity(0.08)]
                                 : [ui.accent.opacity(0.16), Color.white.opacity(0.96)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -114,18 +126,18 @@ struct ResultCard: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(Color.primary.opacity(colorScheme == .dark ? 0.66 : 0.54))
+                .foregroundStyle(tertiaryText)
             Text(value)
                 .font(.headline.weight(.bold))
-                .foregroundStyle(tint)
+                .foregroundStyle(colorScheme == .dark ? primaryText : tint)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(colorScheme == .dark ? 0.14 : 0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(tint.opacity(colorScheme == .dark ? 0.22 : 0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(tint.opacity(colorScheme == .dark ? 0.26 : 0.16), lineWidth: 1)
+                .stroke(tint.opacity(colorScheme == .dark ? 0.4 : 0.16), lineWidth: 1)
         }
     }
 }

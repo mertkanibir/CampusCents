@@ -17,9 +17,25 @@ struct RecentTransactionsCard: View {
                 ForEach(transactions.prefix(6)) { transaction in
                     HStack(spacing: 10) {
                         Image(systemName: transaction.category.icon)
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(.white)
-                            .padding(8)
-                            .background(transaction.category.tint, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .frame(width: 46, height: 46)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        transaction.category.tint.opacity(0.95),
+                                        transaction.category.tint
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            )
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(.white.opacity(0.24), lineWidth: 1)
+                            }
+                            .shadow(color: transaction.category.tint.opacity(0.35), radius: 10, y: 5)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(transaction.title)

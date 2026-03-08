@@ -2,44 +2,51 @@ import SwiftUI
 
 struct SummaryCard: View {
     @EnvironmentObject var state: AppState
-    
-    private var spentRatio: Int {
-        Int((state.spent / max(state.total, 1)) * 100)
+    private let rowHeight: CGFloat = 68
+
+    private var daysLeftInMonth: Int {
+        let cal = Calendar.current
+        let now = Date()
+        let comps = cal.dateComponents([.year, .month], from: now)
+        guard let startOfMonth = cal.date(from: comps),
+              let range = cal.range(of: .day, in: .month, for: startOfMonth),
+              let lastDay = range.last else { return 1 }
+        let todayDay = cal.component(.day, from: now)
+        return max(1, lastDay - todayDay + 1)
     }
 
+    private var dailyBudget: Double {
+        state.remaining / Double(daysLeftInMonth)
+    }
+
+    private let rowSpacing: CGFloat = 6
+    private let columnSpacing: CGFloat = 12
+    private let cellPaddingH: CGFloat = 12
+    private let cellPaddingV: CGFloat = 10
+    private let lineSpacing: CGFloat = 2
+
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Remaining")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
-                    Text(state.remaining.currency)
-                        .font(.system(size: 30, weight: .bold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                        .contentTransition(.numericText())
-                }
-
-                HStack(spacing: 8) {
-                    chip(text: "Health \(state.healthScore)", tint: Colors.mint, fillOpacity: 0.28)
-                    chip(text: "Used \(spentRatio)%", tint: Colors.rose, fillOpacity: 0.24)
-                }
-
-                metricBlock(
-                    title: "Budget",
-                    amount: state.total,
-                    tint: Colors.periwinkle
+        VStack(alignment: .leading, spacing: rowSpacing) {
+            HStack(alignment: .top, spacing: columnSpacing) {
+                leftCell(
+                    label: "\(daysLeftInMonth) days left",
+                    value: "~\(dailyBudget.currency)/day",
+                    valueFont: .system(size: 28, weight: .bold),
+                    valueColor: Colors.mint
                 )
-                .frame(width: 156, alignment: .leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(spacing: 7) {
                 metricBlock(
                     title: "Income",
                     amount: state.profile.monthlyIncome,
                     tint: Colors.mint
+                )
+            }
+
+            HStack(alignment: .top, spacing: columnSpacing) {
+                leftCell(
+                    label: "Remaining",
+                    value: state.remaining.currency,
+                    valueFont: .system(size: 32, weight: .bold),
+                    valueColor: .primary
                 )
                 metricBlock(
                     title: "Spent",
@@ -47,9 +54,9 @@ struct SummaryCard: View {
                     tint: Colors.rose
                 )
             }
-            .frame(width: 156)
         }
-        .padding(12)
+        .padding(16)
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -61,22 +68,43 @@ struct SummaryCard: View {
         .shadow(color: .black.opacity(0.08), radius: 14, y: 6)
     }
 
-    private func metricBlock(title: String, amount: Double, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Text(amount.currency)
-                    .font(.title3.weight(.bold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-            }
+    private func leftCell(
+        label: String,
+        value: String,
+        valueFont: Font,
+        valueColor: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: lineSpacing) {
+            Text(label)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(valueFont)
+                .foregroundStyle(valueColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .contentTransition(.numericText())
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .frame(height: 68)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, cellPaddingH)
+        .padding(.vertical, cellPaddingV)
+        .frame(height: rowHeight)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private func metricBlock(title: String, amount: Double, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: lineSpacing) {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+            Text(amount.currency)
+                .font(.title3.weight(.bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .padding(.horizontal, cellPaddingH)
+        .padding(.vertical, cellPaddingV)
+        .frame(height: rowHeight)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(tint.opacity(0.26))
@@ -87,12 +115,4 @@ struct SummaryCard: View {
         )
     }
 
-    private func chip(text: String, tint: Color, fillOpacity: Double) -> some View {
-        Text(text)
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(tint)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(tint.opacity(fillOpacity), in: Capsule())
-    }
 }

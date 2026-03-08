@@ -17,8 +17,15 @@ final class AppState: ObservableObject {
     @Published var transactions: [Transaction] = Transaction.sample {
         didSet { save() }
     }
+    @Published var templates: [TransactionTemplate] = TransactionTemplate.defaults {
+        didSet { saveTemplatesAndRecurring() }
+    }
+    @Published var recurring: [RecurringTransaction] = [] {
+        didSet { saveTemplatesAndRecurring() }
+    }
 
     private let saveKey = "CampusCents.persisted.v1"
+    private let templatesRecurringKey = "CampusCents.templatesRecurring.v1"
     private var restoring = false
 
     init() {
@@ -117,11 +124,37 @@ final class AppState: ObservableObject {
         }
     }
 
+    func addTemplate(_ template: TransactionTemplate) {
+        templates.append(template)
+    }
+
+    func removeTemplate(_ template: TransactionTemplate) {
+        templates.removeAll { $0.id == template.id }
+    }
+
+    func addRecurring(_ recurring: RecurringTransaction) {
+        self.recurring.append(recurring)
+    }
+
+    func removeRecurring(_ recurring: RecurringTransaction) {
+        self.recurring.removeAll { $0.id == recurring.id }
+    }
+
+    func addOccurrence(for recurring: RecurringTransaction) {
+        let date = max(recurring.nextDueDate, Calendar.current.startOfDay(for: Date()))
+        addTransaction(title: recurring.title, amount: recurring.amount, date: date, category: recurring.category)
+        if let idx = self.recurring.firstIndex(where: { $0.id == recurring.id }) {
+            self.recurring[idx].advanceNextDue()
+        }
+    }
+
     func resetForDemo() {
         hasCompletedOnboarding = false
         profile = .sample
         categories = BudgetCategory.sample
         transactions = Transaction.sample
+        templates = TransactionTemplate.defaults
+        recurring = []
     }
 
     private func save() {
@@ -140,15 +173,28 @@ final class AppState: ObservableObject {
     }
 
     private func restore() {
-        guard let data = UserDefaults.standard.data(forKey: saveKey),
-              let decoded = try? JSONDecoder().decode(SavedState.self, from: data) else { return }
+        if let data = UserDefaults.standard.data(forKey: saveKey),
+           let decoded = try? JSONDecoder().decode(SavedState.self, from: data) {
+            restoring = true
+            hasCompletedOnboarding = decoded.hasCompletedOnboarding
+            profile = decoded.profile
+            categories = decoded.categories
+            transactions = decoded.transactions
+            restoring = false
+        }
+        if let data = UserDefaults.standard.data(forKey: templatesRecurringKey),
+           let decoded = try? JSONDecoder().decode(TemplatesRecurringState.self, from: data) {
+            templates = decoded.templates
+            recurring = decoded.recurring
+        }
+    }
 
-        restoring = true
-        hasCompletedOnboarding = decoded.hasCompletedOnboarding
-        profile = decoded.profile
-        categories = decoded.categories
-        transactions = decoded.transactions
-        restoring = false
+    private func saveTemplatesAndRecurring() {
+        guard !restoring else { return }
+        let state = TemplatesRecurringState(templates: templates, recurring: recurring)
+        if let encoded = try? JSONEncoder().encode(state) {
+            UserDefaults.standard.set(encoded, forKey: templatesRecurringKey)
+        }
     }
 }
 
@@ -177,4 +223,9 @@ private struct SavedState: Codable {
     var profile: StudentProfile
     var categories: [BudgetCategory]
     var transactions: [Transaction]
+}
+
+private struct TemplatesRecurringState: Codable {
+    var templates: [TransactionTemplate]
+    var recurring: [RecurringTransaction]
 }

@@ -15,8 +15,8 @@ struct MainTabView: View {
             InsightsView()
                 .tabItem { Label("Insights", systemImage: "lightbulb.fill") }
 
-            ProfileView()
-                .tabItem { Label("Profile", systemImage: "person.crop.circle.fill") }
+            AddTabView()
+                .tabItem { Label("Add", systemImage: "plus.circle.fill") }
         }
         .tint(Colors.periwinkle)
     }

@@ -14,7 +14,7 @@ struct DashboardView: View {
                 }
                 .padding()
             }
-            .navigationTitle("CampusCents")
+            .navigationTitle("Hi, \(state.profile.name)")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     AvatarView(profile: state.profile, size: 34)

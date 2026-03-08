@@ -2,86 +2,54 @@ import SwiftUI
 
 struct SummaryCard: View {
     @EnvironmentObject var state: AppState
-
-    private var spentRatio: CGFloat {
-        CGFloat(state.spent / max(state.total, 1))
+    
+    private var spentRatio: Int {
+        Int((state.spent / max(state.total, 1)) * 100)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header: greeting + health badge
-            HStack(alignment: .center) {
-                Text("Hi, \(state.profile.name)")
-                    .font(.title3.weight(.semibold))
-                Spacer()
-                Text("Health \(state.healthScore)")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(Colors.mint)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Colors.mint.opacity(0.2), in: Capsule())
-            }
-            .padding(.bottom, 16)
-
-            // Hero: remaining amount + one clear progress ring
-            HStack(alignment: .top, spacing: 20) {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Remaining")
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                     Text(state.remaining.currency)
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 30, weight: .bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                         .contentTransition(.numericText())
                 }
 
-                Spacer(minLength: 8)
-
-                ZStack {
-                    Circle()
-                        .stroke(Color.secondary.opacity(0.12), lineWidth: 6)
-                    Circle()
-                        .trim(from: 0, to: 1 - spentRatio)
-                        .stroke(
-                            Colors.mint,
-                            style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                    Circle()
-                        .trim(from: 1 - spentRatio, to: 1)
-                        .stroke(
-                            Colors.rose.opacity(0.9),
-                            style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                    VStack(spacing: 0) {
-                        Text("\(Int(spentRatio * 100))%")
-                            .font(.system(size: 13, weight: .bold))
-                        Text("used")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
+                HStack(spacing: 8) {
+                    chip(text: "Health \(state.healthScore)", tint: Colors.mint, fillOpacity: 0.28)
+                    chip(text: "Used \(spentRatio)%", tint: Colors.rose, fillOpacity: 0.24)
                 }
-                .frame(width: 72, height: 72)
-            }
-            .padding(.bottom, 16)
 
-            // Income vs Spent: two clear metric blocks
-            HStack(spacing: 10) {
+                metricBlock(
+                    title: "Budget",
+                    amount: state.total,
+                    tint: Colors.periwinkle
+                )
+                .frame(width: 156, alignment: .leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(spacing: 7) {
                 metricBlock(
                     title: "Income",
                     amount: state.profile.monthlyIncome,
-                    icon: "arrow.down.circle.fill",
                     tint: Colors.mint
                 )
                 metricBlock(
                     title: "Spent",
                     amount: state.spent,
-                    icon: "arrow.up.circle.fill",
                     tint: Colors.rose
                 )
             }
+            .frame(width: 156)
         }
-        .padding(18)
+        .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -90,32 +58,41 @@ struct SummaryCard: View {
                         .stroke(Colors.sky.opacity(0.3), lineWidth: 1)
                 )
         )
-        .shadow(color: .black.opacity(0.06), radius: 14, y: 6)
+        .shadow(color: .black.opacity(0.08), radius: 14, y: 6)
     }
 
-    private func metricBlock(title: String, amount: Double, icon: String, tint: Color) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(tint)
+    private func metricBlock(title: String, amount: Double, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption.weight(.medium))
+                    .font(.caption2.weight(.medium))
                     .foregroundStyle(.secondary)
                 Text(amount.currency)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.title3.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            Spacer(minLength: 0)
         }
-        .padding(12)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(height: 68)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(tint.opacity(0.12))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(tint.opacity(0.26))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(tint.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(tint.opacity(0.52), lineWidth: 1.1)
         )
+    }
+
+    private func chip(text: String, tint: Color, fillOpacity: Double) -> some View {
+        Text(text)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(tint.opacity(fillOpacity), in: Capsule())
     }
 }

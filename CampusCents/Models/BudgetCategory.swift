@@ -79,6 +79,8 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         return kinds.map { kind in
             let budget: Double
             switch kind {
+            case .income: budget = profile.monthlyIncome
+            case .investment: budget = profile.investments
             case .tuition: budget = profile.tuition
             case .aid: budget = profile.scholarshipsAid
             case .rent: budget = profile.rent

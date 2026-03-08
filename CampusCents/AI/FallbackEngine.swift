@@ -6,12 +6,22 @@ struct FallbackEngine: Sendable {
     nonisolated init() {}
 
     nonisolated func snapshotInsight(for input: BudgetInput) -> AIResponse {
-        let essentials = input.rent + input.mealPlan + input.groceries + input.transportation
-        let flexible = input.subscriptions + input.personal
-        let outflow = essentials + flexible + input.savingsGoal
-        let netAfterAid = max(0, input.tuition - input.aidScholarships)
-        let aidPct = input.aidScholarships / max(1, input.tuition)
-        let monthlyGap = input.monthlyIncome - outflow
+        let rent = input.getExpense(named: "Rent")
+        let mealPlan = input.getExpense(named: "Meal Plan")
+        let groceries = input.getExpense(named: "Groceries")
+        let transportation = input.getExpense(named: "Transport")
+        let subscriptions = input.getExpense(named: "Subscriptions")
+        let personal = input.getExpense(named: "Personal")
+        let tuition = input.getExpense(named: "Tuition")
+        let aidScholarships = input.getExpense(named: "Scholarships & Aid")
+        let monthlyIncome = input.incomes.map { $0.budget }.reduce(0, +)
+        
+        let essentials = rent + mealPlan + groceries + transportation
+        let flexible = subscriptions + personal
+        let outflow = totalOutflow(for: input)
+        let netAfterAid = max(0, tuition - aidScholarships)
+        let aidPct = aidScholarships / max(1, tuition)
+        let monthlyGap = monthlyIncome - outflow
 
         let flexibility: Flexibility
         if monthlyGap < 120 {
@@ -24,12 +34,13 @@ struct FallbackEngine: Sendable {
 
         var points: [String] = []
         let largest = [
-            ("Housing", input.rent),
+            ("Housing", rent),
             ("Tuition (net)", netAfterAid),
-            ("Meal plan", input.mealPlan),
-            ("Groceries", input.groceries),
-            ("Transportation", input.transportation)
+            ("Meal plan", mealPlan),
+            ("Groceries", groceries),
+            ("Transportation", transportation)
         ].max(by: { $0.1 < $1.1 })
+
         if let largest {
             points.append("\(largest.0) is your biggest cost pressure right now.")
         }
@@ -43,7 +54,7 @@ struct FallbackEngine: Sendable {
         } else {
             points.append("Flexible spending looks controlled relative to essentials.")
         }
-        if input.mealPlan > 0 {
+        if mealPlan > 0 {
             points.append("Meal plan coverage may reduce grocery swings week to week.")
         }
 
@@ -60,7 +71,9 @@ struct FallbackEngine: Sendable {
     }
 
     nonisolated func affordabilityInsight(for input: PurchaseInput) -> AIResponse {
-        let discretionary = max(1, input.snapshot.personal + input.snapshot.subscriptions)
+        let personal = input.snapshot.getExpense(named: "Personal")
+        let subscriptions = input.snapshot.getExpense(named: "Subscriptions")
+        let discretionary = max(1, personal + subscriptions)
         let impactRatio = input.amount / discretionary
 
         let impact: Impact
@@ -134,22 +147,30 @@ struct FallbackEngine: Sendable {
 
     nonisolated func spendingPressureInsights(for input: BudgetInput) -> [String] {
         var result: [String] = []
+        let rent = input.getExpense(named: "Rent")
+        let mealPlan = input.getExpense(named: "Meal Plan")
+        let groceries = input.getExpense(named: "Groceries")
+        let transportation = input.getExpense(named: "Transport")
+        let subscriptions = input.getExpense(named: "Subscriptions")
+        let personal = input.getExpense(named: "Personal")
+        let monthlyIncome = input.incomes.map { $0.budget }.reduce(0, +)
 
-        if input.rent >= max(input.mealPlan, input.groceries, input.transportation, input.subscriptions, input.personal) {
+
+        if rent >= max(mealPlan, groceries, transportation, subscriptions, personal) {
             result.append("Housing is your biggest fixed cost.")
         }
 
-        if input.subscriptions >= 25 {
+        if subscriptions >= 25 {
             result.append("Subscriptions are small individually but meaningful together.")
         }
 
-        let essentials = input.rent + input.mealPlan + input.groceries + input.transportation
-        let monthlyBuffer = input.monthlyIncome - (essentials + input.personal + input.subscriptions + input.savingsGoal)
+        let essentials = rent + mealPlan + groceries + transportation
+        let monthlyBuffer = monthlyIncome - (essentials + personal + subscriptions + input.savingsGoal)
         if monthlyBuffer < 120 {
             result.append("Your budget has limited flexibility after essentials.")
         }
 
-        if input.mealPlan > 0 {
+        if mealPlan > 0 {
             result.append("Meal plan usage may be helping reduce grocery variability.")
         }
 
@@ -161,15 +182,18 @@ struct FallbackEngine: Sendable {
     }
 
     private nonisolated func totalOutflow(for input: BudgetInput) -> Double {
-        input.tuition + input.rent + input.mealPlan + input.groceries + input.transportation + input.subscriptions + input.personal + input.savingsGoal - input.aidScholarships
+        let allExpenses = input.expenses.filter { $0.name != "Scholarships & Aid" }.map { $0.budget }.reduce(0, +)
+        let aid = input.getExpense(named: "Scholarships & Aid")
+        return allExpenses + input.savingsGoal - aid
     }
 
     private nonisolated func awarenessSuggestions(for input: BudgetInput, flexibility: Flexibility) -> [String] {
         var suggestions: [String] = []
+        let subscriptions = input.getExpense(named: "Subscriptions")
         if flexibility == .tight {
             suggestions.append("Use small weekly check-ins to prevent surprise end-of-cycle pressure.")
         }
-        if input.subscriptions > 0 {
+        if subscriptions > 0 {
             suggestions.append("Review recurring subscriptions each cycle for drift.")
         }
         suggestions.append("Track changes in groceries and personal spending first when flexibility tightens.")

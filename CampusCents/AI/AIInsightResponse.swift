@@ -42,19 +42,33 @@ struct BudgetInput: Sendable, Equatable {
         }
     }
 
-    var tuition: Double
-    var aidScholarships: Double
-    var rent: Double
-    var mealPlan: Double
-    var groceries: Double
-    var transportation: Double
-    var subscriptions: Double
-    var personal: Double
+    struct CategoryInput: Sendable, Equatable {
+        var name: String
+        var budget: Double
+        var spent: Double
+    }
+
     var savingsGoal: Double
-    var monthlyIncome: Double
-    var investments: Double
     var budgetStyle: BudgetStyle
     var housingType: HousingType
+    var incomes: [CategoryInput]
+    var expenses: [CategoryInput]
+    
+    mutating func adjustExpense(named name: String, by amount: Double) {
+        if let idx = expenses.firstIndex(where: { $0.name == name }) {
+            expenses[idx].budget = max(0, expenses[idx].budget + amount)
+        }
+    }
+    
+    mutating func setExpense(named name: String, to amount: Double) {
+        if let idx = expenses.firstIndex(where: { $0.name == name }) {
+            expenses[idx].budget = max(0, amount)
+        }
+    }
+    
+    nonisolated func getExpense(named name: String) -> Double {
+        expenses.first(where: { $0.name == name })?.budget ?? 0
+    }
 }
 
 struct PurchaseInput: Sendable, Equatable {

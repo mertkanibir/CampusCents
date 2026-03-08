@@ -5,6 +5,13 @@ import PhotosUI
 struct AvatarPickerView: View {
     @Binding var profile: StudentProfile
     @State private var selectedPhoto: PhotosPickerItem?
+    @Environment(\.colorScheme) private var colorScheme
+    /// Use in onboarding so "Choose Profile Photo" is never black in dark mode. Default nil = system accent.
+    var labelColor: Color? = nil
+
+    private var effectiveLabelColor: Color {
+        labelColor ?? (colorScheme == .dark ? .white : .primary)
+    }
 
     var body: some View {
         VStack(spacing: 10) {
@@ -13,7 +20,9 @@ struct AvatarPickerView: View {
             PhotosPicker(selection: $selectedPhoto, matching: .images) {
                 Label("Choose Profile Photo", systemImage: "photo.badge.plus")
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(effectiveLabelColor)
             }
+            .tint(effectiveLabelColor)
             .onChange(of: selectedPhoto) { _, newItem in
                 guard let newItem else { return }
                 Task {

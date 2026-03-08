@@ -27,10 +27,10 @@ struct SnapshotCard: View {
                 Label("AI Overview", systemImage: "sparkles.rectangle.stack")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(
-                        LinearGradient(
-                            colors: [Colors.periwinkle, Colors.rose],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                        AngularGradient(
+                            colors: rainbowColors,
+                            center: .center,
+                            angle: .degrees(rainbowPhase)
                         )
                     )
             }

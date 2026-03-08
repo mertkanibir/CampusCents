@@ -22,9 +22,9 @@ struct FallbackEngine: Sendable {
         let monthlyGap = monthlyIncome - outflow
 
         let flexibility: Flexibility
-        if monthlyGap < 120 {
+        if monthlyGap < 180 {
             flexibility = .tight
-        } else if monthlyGap < 350 {
+        } else if monthlyGap < 420 {
             flexibility = .moderate
         } else {
             flexibility = .comfortable
@@ -40,23 +40,25 @@ struct FallbackEngine: Sendable {
         ].max(by: { $0.1 < $1.1 })
 
         if let largest {
-            points.append("\(largest.0) is your biggest cost pressure right now.")
+            points.append("\(largest.0) is your biggest cost pressure—keep an eye on it.")
         }
-        if aidPct >= 0.65 {
-            points.append("Aid offsets a meaningful share of tuition (about \(Int(aidPct * 100))%).")
+        if aidPct >= 0.82 {
+            points.append("Aid covers a solid \(Int(aidPct * 100))% of tuition.")
         } else {
-            points.append("Aid only covers about \(Int(aidPct * 100))% of tuition, so tuition still carries pressure.")
+            points.append("Aid only covers \(Int(aidPct * 100))% of tuition. The rest is on you—plan for it.")
         }
-        if flexible > essentials * 0.45 {
-            points.append("Flexible spending is relatively high compared with essentials.")
+        if flexible > essentials * 0.38 {
+            points.append("Flexible spending is high vs essentials. Easy to overspend there.")
+        } else if flexible > essentials * 0.28 {
+            points.append("Flexible spending is creeping up. Don’t let it get out of hand.")
         } else {
-            points.append("Flexible spending looks controlled relative to essentials.")
+            points.append("Flexible spending is under control relative to essentials.")
         }
         if mealPlan > 0 {
-            points.append("Meal plan coverage may reduce grocery swings week to week.")
+            points.append("Meal plan helps, but don’t lean on takeout too much.")
         }
 
-        let summary = "Your \(input.budgetStyle.displayName.lowercased()) setup looks \(flexibility.rawValue), with most pressure from \(largest?.0.lowercased() ?? "core costs"). Net tuition after aid is \(netAfterAid.formatted(.currency(code: "USD")))."
+        let summary = "Your \(input.budgetStyle.displayName.lowercased()) budget is \(flexibility.rawValue). Main pressure: \(largest?.0.lowercased() ?? "core costs"). Net tuition after aid: \(netAfterAid.formatted(.currency(code: "USD")))."
 
         return AIResponse(
             status: "fallback",
@@ -75,9 +77,9 @@ struct FallbackEngine: Sendable {
         let impactRatio = input.amount / discretionary
 
         let impact: Impact
-        if impactRatio < 0.15 {
+        if impactRatio < 0.10 {
             impact = .lowImpact
-        } else if impactRatio < 0.4 {
+        } else if impactRatio < 0.32 {
             impact = .moderateImpact
         } else {
             impact = .highImpact
@@ -87,25 +89,25 @@ struct FallbackEngine: Sendable {
         let summary: String
         switch impact {
         case .lowImpact:
-            summary = "\(input.name) is a low-impact add in your current budget. It slightly reduces short-term flexibility by about \(runwayChange.formatted(.currency(code: "USD")))/week."
+            summary = "\(input.name) is a small hit—about \(runwayChange.formatted(.currency(code: "USD")))/week. Still, little stuff adds up."
         case .moderateImpact:
-            summary = "\(input.name) creates a moderate budget impact. It narrows your weekly flexibility by roughly \(runwayChange.formatted(.currency(code: "USD"))) and adds a visible tradeoff."
+            summary = "\(input.name) bites into your runway by ~\(runwayChange.formatted(.currency(code: "USD")))/week. Not crazy, but not nothing either."
         case .highImpact:
-            summary = "\(input.name) creates a high impact on your discretionary runway. This would noticeably tighten flexibility unless another category is adjusted."
+            summary = "\(input.name) takes a big chunk of discretionary money. Either cut something else or skip it."
         }
 
         return AIResponse(
             status: "fallback",
             summary: summary,
             points: [
-                "Estimated impact level: \(impact.displayName).",
-                "Discretionary pool considered: \(discretionary.formatted(.currency(code: "USD")))."
+                "Impact: \(impact.displayName).",
+                "Discretionary pool: \(discretionary.formatted(.currency(code: "USD")))."
             ],
             flexibility: snapshotInsight(for: input.snapshot).flexibility,
             impact: impact,
             suggestions: [
-                "Track whether this changes your remaining weekly runway.",
-                "Check if this affects savings consistency this cycle."
+                "If you buy it, trim another category so the math still works.",
+                "One splurge is fine; a habit of them isn’t."
             ]
         )
     }
@@ -256,25 +258,27 @@ struct FallbackEngine: Sendable {
 
 
         if rent >= max(mealPlan, groceries, transportation, subscriptions, personal) {
-            result.append("Housing is your biggest fixed cost.")
+            result.append("Housing is your biggest fixed cost—no room to slip there.")
         }
 
-        if subscriptions >= 25 {
-            result.append("Subscriptions are small individually but meaningful together.")
+        if subscriptions >= 18 {
+            result.append("Subscriptions add up. Audit them before they bleed you.")
         }
 
         let essentials = rent + mealPlan + groceries + transportation
         let monthlyBuffer = monthlyIncome - (essentials + personal + subscriptions + input.savingsGoal)
-        if monthlyBuffer < 120 {
-            result.append("Your budget has limited flexibility after essentials.")
+        if monthlyBuffer < 180 {
+            result.append("Very little wiggle room after essentials. One big spend hurts.")
+        } else if monthlyBuffer < 320 {
+            result.append("Buffer is okay but not great. Watch discretionary spending.")
         }
 
         if mealPlan > 0 {
-            result.append("Meal plan usage may be helping reduce grocery variability.")
+            result.append("Meal plan helps—rely on it instead of extra food spend.")
         }
 
         if result.isEmpty {
-            result.append("Spending pressure currently looks balanced across categories.")
+            result.append("Spending pressure is balanced for now. Don’t get complacent.")
         }
 
         return result
@@ -290,12 +294,12 @@ struct FallbackEngine: Sendable {
         var suggestions: [String] = []
         let subscriptions = input.getExpense(named: "Subscriptions")
         if flexibility == .tight {
-            suggestions.append("Use small weekly check-ins to prevent surprise end-of-cycle pressure.")
+            suggestions.append("Check in weekly. You don’t have room for surprises.")
         }
         if subscriptions > 0 {
-            suggestions.append("Review recurring subscriptions each cycle for drift.")
+            suggestions.append("Cut or pause subscriptions you don’t use.")
         }
-        suggestions.append("Track changes in groceries and personal spending first when flexibility tightens.")
+        suggestions.append("Groceries and personal spending are where most people blow it—watch those first.")
         return suggestions
     }
 }

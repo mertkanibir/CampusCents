@@ -88,30 +88,35 @@ final class AppState: ObservableObject {
 
         for category in categories where category.kind != .aid {
             let ratio = category.spent / max(category.budget, 1)
+            let remaining = category.budget - category.spent
             if ratio > 1.0 {
-                items.append(.init(id: "over-\(category.id.uuidString)", icon: "exclamationmark.triangle.fill", title: "\(category.name) is over budget", detail: "Spent \(category.spent.currency) on a \(category.budget.currency) budget.", tint: Colors.peach, tone: .watch))
-            } else if ratio > 0.85 {
-                items.append(.init(id: "limit-\(category.id.uuidString)", icon: "gauge.with.needle.fill", title: "\(category.name) is close to limit", detail: "Only \((category.budget - category.spent).currency) remains.", tint: Colors.sun, tone: .watch))
+                items.append(.init(id: "over-\(category.id.uuidString)", icon: "exclamationmark.triangle.fill", title: "\(category.name) is over budget", detail: "You've overspent by \((category.spent - category.budget).currency). Rein it in.", tint: Colors.peach, tone: .watch))
+            } else if ratio > 0.78 {
+                items.append(.init(id: "limit-\(category.id.uuidString)", icon: "gauge.with.needle.fill", title: "\(category.name) is running low", detail: "Only \(remaining.currency) left. Slow down or you'll blow the budget.", tint: Colors.sun, tone: .watch))
+            } else if ratio > 0.58 {
+                items.append(.init(id: "creep-\(category.id.uuidString)", icon: "arrow.up.right", title: "\(category.name) is creeping up", detail: "\(Int(ratio * 100))% used. \(remaining.currency) left—watch it.", tint: Colors.lavender, tone: .watch))
             }
         }
 
         let aidPct = profile.scholarshipsAid / max(profile.tuition, 1)
-        if aidPct >= 0.7 {
+        if aidPct >= 0.88 {
             items.append(.init(id: "aid-strong", icon: "graduationcap.fill", title: "Strong aid coverage", detail: "Aid covers \(Int(aidPct * 100))% of tuition this term.", tint: Colors.mint, tone: .positive))
-        } else {
-            items.append(.init(id: "aid-pressure", icon: "book.closed.fill", title: "Tuition pressure detected", detail: "Aid covers \(Int(aidPct * 100))% of tuition. Plan the shortfall early.", tint: Colors.sky, tone: .watch))
+        } else if aidPct >= 0.5 {
+            items.append(.init(id: "aid-pressure", icon: "book.closed.fill", title: "Tuition aid gap", detail: "Aid only covers \(Int(aidPct * 100))% of tuition. Plan for the shortfall now.", tint: Colors.sky, tone: .watch))
+        } else if profile.tuition > 0 {
+            items.append(.init(id: "aid-weak", icon: "exclamationmark.triangle.fill", title: "Heavy tuition pressure", detail: "Aid is just \(Int(aidPct * 100))% of tuition. This needs attention.", tint: Colors.peach, tone: .watch))
         }
 
         if transactions.count >= 2 {
             let lastTwo = transactions.sorted { $0.date > $1.date }.prefix(2)
             let sum = lastTwo.map(\.amount).reduce(0, +)
-            if sum > 80 {
-                items.append(.init(id: "recent-spending", icon: "bolt.fill", title: "High recent spending", detail: "Last two purchases total \(sum.currency).", tint: Colors.lavender, tone: .watch))
+            if sum > 45 {
+                items.append(.init(id: "recent-spending", icon: "bolt.fill", title: "Recent spending is high", detail: "Last two purchases: \(sum.currency). That adds up fast.", tint: Colors.lavender, tone: .watch))
             }
         }
 
         if items.isEmpty {
-            items.append(.init(id: "healthy-state", icon: "checkmark.seal.fill", title: "Budget is in a healthy state", detail: "No warning signs right now. Keep logging transactions.", tint: Colors.mint, tone: .positive))
+            items.append(.init(id: "healthy-state", icon: "checkmark.seal.fill", title: "Budget looks good for now", detail: "No red flags yet. Keep logging so we can catch issues early.", tint: Colors.mint, tone: .positive))
         }
         return items
     }

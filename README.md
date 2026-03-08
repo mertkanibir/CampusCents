@@ -31,6 +31,8 @@ Open the project in Xcode and run it on an iOS simulator or device.
 - Insights rework [ ]
 - Add in major calculations to README or additional markdown [ ]
 - REDO budget page - lp [ ]
+- Scrolling down the time overlaps the contents - add fade under? [ ]
+- "Check if a purchase fit.." gets cut off
 
   
 ## LOW PRIORITY

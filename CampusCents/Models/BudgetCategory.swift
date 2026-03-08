@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BudgetCategory: Identifiable, Hashable, Codable {
-    enum Kind: String, CaseIterable, Codable {
+    enum Kind: Hashable, Codable, Equatable {
         case income
         case investment
         case tuition
@@ -13,6 +13,78 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         case transportation
         case subscriptions
         case personal
+        case custom(id: String, name: String, icon: String, tint: ColorValue, isIncome: Bool)
+
+        init(from decoder: Decoder) throws {
+            if let str = try? decoder.singleValueContainer().decode(String.self) {
+                switch str {
+                case "income": self = .income
+                case "investment": self = .investment
+                case "tuition": self = .tuition
+                case "aid": self = .aid
+                case "rent": self = .rent
+                case "utilities": self = .utilities
+                case "mealPlan": self = .mealPlan
+                case "groceries": self = .groceries
+                case "transportation": self = .transportation
+                case "subscriptions": self = .subscriptions
+                case "personal": self = .personal
+                default:
+                    self = .custom(id: str, name: str, icon: "star.fill", tint: ColorValue(Colors.peach), isIncome: false)
+                }
+                return
+            }
+            
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let customDict = try? container.nestedContainer(keyedBy: CustomKeys.self, forKey: .custom) {
+                 let id = try customDict.decode(String.self, forKey: .id)
+                 let name = try customDict.decode(String.self, forKey: .name)
+                 let icon = try customDict.decode(String.self, forKey: .icon)
+                 let tint = try customDict.decode(ColorValue.self, forKey: .tint)
+                 let isIncome = try customDict.decode(Bool.self, forKey: .isIncome)
+                 self = .custom(id: id, name: name, icon: icon, tint: tint, isIncome: isIncome)
+                 return
+            }
+            throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Invalid Kind"))
+        }
+
+        func encode(to encoder: Encoder) throws {
+            switch self {
+            case .custom(let id, let name, let icon, let tint, let isIncome):
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                var customDict = container.nestedContainer(keyedBy: CustomKeys.self, forKey: .custom)
+                try customDict.encode(id, forKey: .id)
+                try customDict.encode(name, forKey: .name)
+                try customDict.encode(icon, forKey: .icon)
+                try customDict.encode(tint, forKey: .tint)
+                try customDict.encode(isIncome, forKey: .isIncome)
+            default:
+                var container = encoder.singleValueContainer()
+                let strVal: String
+                switch self {
+                case .income: strVal = "income"
+                case .investment: strVal = "investment"
+                case .tuition: strVal = "tuition"
+                case .aid: strVal = "aid"
+                case .rent: strVal = "rent"
+                case .utilities: strVal = "utilities"
+                case .mealPlan: strVal = "mealPlan"
+                case .groceries: strVal = "groceries"
+                case .transportation: strVal = "transportation"
+                case .subscriptions: strVal = "subscriptions"
+                case .personal: strVal = "personal"
+                default: fatalError()
+                }
+                try container.encode(strVal)
+            }
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case custom
+        }
+        private enum CustomKeys: String, CodingKey {
+            case id, name, icon, tint, isIncome
+        }
 
         var displayName: String {
             switch self {
@@ -27,6 +99,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: return "Transport"
             case .subscriptions: return "Subscriptions"
             case .personal: return "Personal"
+            case .custom(_, let name, _, _, _): return name
             }
         }
 
@@ -43,6 +116,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: return "car.fill"
             case .subscriptions: return "play.circle.fill"
             case .personal: return "face.smiling.fill"
+            case .custom(_, _, let icon, _, _): return icon
             }
         }
 
@@ -59,6 +133,15 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: return Colors.periwinkle
             case .subscriptions: return Colors.pistachio
             case .personal: return Colors.peach
+            case .custom(_, _, _, let tint, _): return tint.color
+            }
+        }
+        
+        var isIncome: Bool {
+            switch self {
+            case .income: return true
+            case .custom(_, _, _, _, let isInc): return isInc
+            default: return false
             }
         }
     }
@@ -76,7 +159,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
     static func from(profile: StudentProfile) -> [BudgetCategory] {
         let kinds: [Kind] = [.tuition, .aid, .rent, .utilities, .mealPlan, .groceries, .transportation, .subscriptions, .personal]
-        return kinds.map { kind in
+        var categories = kinds.map { kind in
             let budget: Double
             switch kind {
             case .income: budget = profile.monthlyIncome
@@ -90,6 +173,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: budget = profile.transportation
             case .subscriptions: budget = profile.subscriptions
             case .personal: budget = profile.personal
+            default: budget = 0
             }
             return BudgetCategory(
                 id: UUID(),
@@ -100,6 +184,10 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
                 color: .init(kind.tint)
             )
         }
+        
+        categories.append(contentsOf: profile.customCategories)
+        
+        return categories
     }
 
     static let sample: [BudgetCategory] = [
@@ -117,3 +205,4 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         .init(id: UUID(), kind: .personal, name: "Personal", budget: 180, spent: 140, color: .init(Colors.peach))
     ]
 }
+

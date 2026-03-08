@@ -24,7 +24,7 @@ struct AddTransactionView: View {
                         .keyboardType(.decimalPad)
                     DatePicker("Date", selection: $date, displayedComponents: .date)
                     Picker("Category", selection: $category) {
-                        ForEach(BudgetCategory.Kind.allCases, id: \.self) { kind in
+                        ForEach(state.categories.map(\.kind), id: \.self) { kind in
                             if kind != .aid {
                                 Label(kind.displayName, systemImage: kind.icon)
                                     .tag(kind)

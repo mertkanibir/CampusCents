@@ -20,6 +20,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
     var budgetStyle: BudgetInput.BudgetStyle
     var housingType: BudgetInput.HousingType
     var avatarData: Data?
+    var customCategories: [BudgetCategory]
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -41,6 +42,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         case budgetStyle
         case housingType
         case avatarData
+        case customCategories
     }
 
     var initials: String {
@@ -68,7 +70,8 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         savingsGoal: 0,
         budgetStyle: .monthly,
         housingType: .offCampus,
-        avatarData: nil
+        avatarData: nil,
+        customCategories: []
     )
 
     static let sample = StudentProfile(
@@ -90,7 +93,8 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         savingsGoal: 120,
         budgetStyle: .monthly,
         housingType: .offCampus,
-        avatarData: nil
+        avatarData: nil,
+        customCategories: []
     )
 
     init(
@@ -112,7 +116,8 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         savingsGoal: Double,
         budgetStyle: BudgetInput.BudgetStyle,
         housingType: BudgetInput.HousingType,
-        avatarData: Data?
+        avatarData: Data?,
+        customCategories: [BudgetCategory] = []
     ) {
         self.id = id
         self.name = name
@@ -133,6 +138,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         self.budgetStyle = budgetStyle
         self.housingType = housingType
         self.avatarData = avatarData
+        self.customCategories = customCategories
     }
 
     init(from decoder: Decoder) throws {
@@ -156,6 +162,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         budgetStyle = try container.decodeIfPresent(BudgetInput.BudgetStyle.self, forKey: .budgetStyle) ?? .monthly
         housingType = try container.decodeIfPresent(BudgetInput.HousingType.self, forKey: .housingType) ?? .offCampus
         avatarData = try container.decodeIfPresent(Data.self, forKey: .avatarData)
+        customCategories = try container.decodeIfPresent([BudgetCategory].self, forKey: .customCategories) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -179,5 +186,6 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         try container.encode(budgetStyle, forKey: .budgetStyle)
         try container.encode(housingType, forKey: .housingType)
         try container.encodeIfPresent(avatarData, forKey: .avatarData)
+        try container.encode(customCategories, forKey: .customCategories)
     }
 }

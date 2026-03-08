@@ -18,7 +18,7 @@ struct AddRecurringView: View {
                     TextField("Amount", text: $amountText)
                         .keyboardType(.decimalPad)
                     Picker("Category", selection: $category) {
-                        ForEach(BudgetCategory.Kind.allCases, id: \.self) { kind in
+                        ForEach(state.categories.map(\.kind), id: \.self) { kind in
                             if kind != .aid {
                                 Label(kind.displayName, systemImage: kind.icon)
                                     .tag(kind)

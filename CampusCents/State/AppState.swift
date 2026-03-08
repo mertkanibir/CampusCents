@@ -164,8 +164,6 @@ final class AppState: ObservableObject {
             }) {
                 updatedProfile.customCategories[customIdx].budget = safe
             }
-        default:
-            break
         }
         profile = updatedProfile
     }

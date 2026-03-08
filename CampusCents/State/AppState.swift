@@ -157,30 +157,6 @@ final class AppState: ObservableObject {
         }
     }
 
-    func addCustomCategory(name: String, budget: Double, isIncome: Bool, color: Color) {
-        let id = UUID().uuidString
-        let kind = BudgetCategory.Kind.custom(
-            id: id,
-            name: name,
-            desc: "",
-            icon: "star.fill",
-            tint: ColorValue(color),
-            isIncome: isIncome
-        )
-        let category = BudgetCategory(
-            id: UUID(),
-            kind: kind,
-            name: name,
-            budget: budget,
-            spent: 0,
-            color: ColorValue(color)
-        )
-        categories.append(category)
-        var updatedProfile = profile
-        updatedProfile.customCategories.append(category)
-        profile = updatedProfile
-    }
-
     func addTemplate(_ template: TransactionTemplate) {
         templates.append(template)
     }

@@ -38,18 +38,28 @@ struct OnboardingView: View {
         )
     }
 
+    /// Background for features + setup pages: more green tint to match CampusCents branding.
     private var appBackground: LinearGradient {
         if colorScheme == .dark {
             return LinearGradient(
                 colors: [
-                    Color(red: 0.11, green: 0.11, blue: 0.12),
-                    Color(red: 0.09, green: 0.09, blue: 0.10)
+                    Color(red: 0.06, green: 0.14, blue: 0.12),
+                    Color(red: 0.08, green: 0.12, blue: 0.11),
+                    Color(red: 0.10, green: 0.14, blue: 0.13)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         }
-        return Colors.appGradient(for: colorScheme)
+        return LinearGradient(
+            colors: [
+                Color(red: 0.88, green: 0.97, blue: 0.93),
+                Color(red: 0.90, green: 0.96, blue: 0.94),
+                Color(red: 0.92, green: 0.95, blue: 0.92)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     private var primaryLabel: Color {
@@ -160,59 +170,33 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Welcome (card layout to match features/setup)
+    // MARK: - Welcome (minimal: icon, title, subtitle only — white text on green in both schemes)
     private var welcomePage: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                Image("CampusCentsIcon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 120, height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-                    .shadow(color: .black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 16, y: 6)
-                    .padding(.top, 32)
+        VStack(spacing: 24) {
+            Spacer(minLength: 40)
+            Image("CampusCentsIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                .shadow(color: .black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 16, y: 6)
 
-                VStack(alignment: .leading, spacing: 18) {
-                    VStack(spacing: 6) {
-                        Text("Welcome to CampusCents")
-                            .font(.title.weight(.bold))
-                            .foregroundStyle(primaryLabel)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                        Text("Your intelligent budgeting companion for student life.")
-                            .font(.subheadline)
-                            .foregroundStyle(secondaryLabel)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                    }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        bulletRow("Quick setup — we'll guide you step by step")
-                        bulletRow("Track spending and see where your money goes")
-                        bulletRow("AI-powered insights tailored to your budget")
-                        bulletRow("Know what you can afford before you buy")
-                    }
-                }
-                .padding(22)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1))
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+            VStack(spacing: 10) {
+                Text("Welcome to")
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(.white)
+                Text("CampusCents")
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(.white)
+                Text("Your intelligent budgeting companion for student life.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
             }
+            Spacer(minLength: 40)
         }
-        .scrollIndicators(.hidden)
-    }
-
-    private func bulletRow(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.subheadline)
-                .foregroundStyle(Colors.pistachio)
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(secondaryLabel)
-        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Combined features (one page: track + AI + afford)
@@ -224,7 +208,13 @@ struct OnboardingView: View {
                     .foregroundStyle(primaryLabel)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 24)
-                    .padding(.bottom, 8)
+                Text("CampusCents helps you track spending, get AI insights, and see what you can afford before you buy. Next we'll set up your profile and budget.")
+                    .font(.subheadline)
+                    .foregroundStyle(secondaryLabel)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 4)
+                    .padding(.bottom, 12)
 
                 featureCard(
                     icon: "chart.pie.fill",
@@ -384,7 +374,11 @@ private func isWizardStepComplete(profile: StudentProfile, step: SetupStep) -> B
     case .income:
         return profile.monthlyIncome >= 0 && profile.savings >= 0 && profile.tuition >= 0 && profile.scholarshipsAid >= 0
     case .housing:
-        return profile.rent >= 0 && profile.utilities >= 0
+        switch profile.housingType {
+        case .onCampus: return profile.rent >= 0
+        case .offCampus: return profile.rent >= 0 && profile.utilities >= 0
+        case .commuter: return true
+        }
     case .food:
         return profile.mealPlan >= 0 && profile.groceries >= 0
     case .expenses:
@@ -443,6 +437,9 @@ struct OnboardingSetupView: View {
         }
         .onChange(of: termSeason) { _, _ in profile.term = "\(termSeason) \(termYear)" }
         .onChange(of: termYear) { _, _ in profile.term = "\(termSeason) \(termYear)" }
+        .onChange(of: profile.housingType) { _, newType in
+            if newType == .commuter { profile.utilities = 0; profile.rent = 0 }
+        }
     }
 
     private func sectionHeader(icon: String, title: String, subtitle: String? = nil, accent: Color = Colors.mint) -> some View {
@@ -482,22 +479,35 @@ struct OnboardingSetupView: View {
 
     private var profileStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-            sectionTitle("Who are you?", subtitle: "We'll use this to personalize your experience")
-            AvatarPickerView(profile: $profile)
+            VStack(spacing: 8) {
+                Text("Who are you?")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(primaryLabel)
+                    .frame(maxWidth: .infinity)
+                Text("We'll use this to personalize your budget and insights. Tell us a bit about yourself.")
+                    .font(.subheadline)
+                    .foregroundStyle(secondaryLabel)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.bottom, 4)
+
+            AvatarPickerView(profile: $profile, labelColor: primaryLabel)
                 .frame(maxWidth: .infinity)
 
-            formField(label: "Name", hint: "Your full name") {
+            formField(label: "Name", hint: "Your full name — how we'll refer to you in the app") {
                 LabeledField("", value: $profile.name, placeholder: "Your full name", labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "School", hint: "University or college") {
+            formField(label: "School", hint: "University or college you attend") {
                 LabeledField("", value: $profile.school, placeholder: "University or college", labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Expected graduation", hint: "Spring, Summer, or Fall graduation") {
+            formField(label: "Expected graduation", hint: "Spring, Summer, Fall, or Winter and year") {
                 HStack(spacing: 12) {
                     Picker("Term", selection: $termSeason) {
                         Text("Spring").tag("Spring")
                         Text("Summer").tag("Summer")
                         Text("Fall").tag("Fall")
+                        Text("Winter").tag("Winter")
                     }
                     .pickerStyle(.menu)
                     .tint(inputText)
@@ -516,17 +526,22 @@ struct OnboardingSetupView: View {
 
     private var incomeStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
+<<<<<<< HEAD
             sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Per month unless noted", accent: Colors.mint)
             formField(label: "Current savings", hint: "Money already in the bank") {
                 LabeledNumberField("", value: $profile.savings, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Monthly income", hint: "Jobs, side gigs, allowance") {
+=======
+            sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Your income and school costs drive your budget. Enter amounts per month unless we say otherwise (e.g. tuition per term).", accent: Colors.mint)
+            formField(label: "Monthly income", hint: "Jobs, side gigs, allowance — what you actually take in each month") {
+>>>>>>> refs/remotes/origin/main
                 LabeledNumberField("", value: $profile.monthlyIncome, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Tuition per term", hint: "Total for fall or spring") {
+            formField(label: "Tuition per term", hint: "Total tuition for one term (fall, spring, or summer)") {
                 LabeledNumberField("", value: $profile.tuition, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Scholarships & aid", hint: "Financial aid per term") {
+            formField(label: "Scholarships & aid", hint: "Financial aid, grants, or scholarships applied per term") {
                 LabeledNumberField("", value: $profile.scholarshipsAid, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
@@ -534,8 +549,8 @@ struct OnboardingSetupView: View {
 
     private var housingStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-            sectionHeader(icon: "house.fill", title: "Where you live", subtitle: "Monthly housing costs", accent: Colors.peach)
-            formField(label: "Housing type", hint: "Dorm, apartment, or living at home") {
+            sectionHeader(icon: "house.fill", title: "Where you live", subtitle: "Housing affects a big part of your budget. Choose your situation so we can label costs correctly — dorms, rent, or commuting from home.", accent: Colors.peach)
+            formField(label: "Housing type", hint: "On-campus (dorm), off-campus (apartment/house), or commuter (living at home)") {
                 Picker("Housing type", selection: $profile.housingType) {
                     Text("On-Campus").tag(BudgetInput.HousingType.onCampus)
                     Text("Off-Campus").tag(BudgetInput.HousingType.offCampus)
@@ -544,22 +559,34 @@ struct OnboardingSetupView: View {
                 .pickerStyle(.segmented)
                 .tint(Colors.peach)
             }
-            formField(label: "Rent", hint: "Monthly rent or room & board") {
-                LabeledNumberField("", value: $profile.rent, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
-            }
-            formField(label: "Utilities", hint: "Electric, water, internet") {
-                LabeledNumberField("", value: $profile.utilities, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
+
+            switch profile.housingType {
+            case .onCampus:
+                formField(label: "Dorm", hint: "Monthly cost for room and board or university housing. Utilities are usually included.") {
+                    LabeledNumberField("", value: $profile.rent, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
+                }
+            case .offCampus:
+                formField(label: "Rent", hint: "Monthly rent for your apartment or house") {
+                    LabeledNumberField("", value: $profile.rent, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
+                }
+                formField(label: "Utilities", hint: "Electric, water, internet, etc. — monthly total") {
+                    LabeledNumberField("", value: $profile.utilities, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
+                }
+            case .commuter:
+                Text("You're living at home — we won't ask for rent or utilities. Add any household contribution you make in \"Other monthly spending\" if you like.")
+                    .font(.subheadline)
+                    .foregroundStyle(secondaryLabel)
             }
         }
     }
 
     private var foodStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-            sectionHeader(icon: "fork.knife", title: "Food", subtitle: "Monthly budget for eating", accent: Colors.sun)
-            formField(label: "Meal plan", hint: "Campus dining — 0 if none") {
+            sectionHeader(icon: "fork.knife", title: "Food", subtitle: "Food is one of the easiest categories to overspend. Setting a number here helps you stay on track.", accent: Colors.sun)
+            formField(label: "Meal plan", hint: "Campus dining plan cost per month — enter 0 if you don't have one") {
                 LabeledNumberField("", value: $profile.mealPlan, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Groceries", hint: "Stores, restaurants, delivery") {
+            formField(label: "Groceries", hint: "Stores, restaurants, delivery — what you spend on food outside the meal plan") {
                 LabeledNumberField("", value: $profile.groceries, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
@@ -567,14 +594,14 @@ struct OnboardingSetupView: View {
 
     private var expensesStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-            sectionHeader(icon: "creditcard.fill", title: "Other monthly spending", subtitle: "Transport, subscriptions, personal", accent: Colors.lavender)
-            formField(label: "Transportation", hint: "Gas, transit, rideshare") {
+            sectionHeader(icon: "creditcard.fill", title: "Other monthly spending", subtitle: "Transportation, subscriptions, and personal spending round out your budget. Estimate what you typically spend or plan to spend.", accent: Colors.lavender)
+            formField(label: "Transportation", hint: "Gas, transit passes, rideshare — getting around each month") {
                 LabeledNumberField("", value: $profile.transportation, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Subscriptions", hint: "Netflix, Spotify, gym") {
+            formField(label: "Subscriptions", hint: "Streaming, music, gym, apps — monthly total") {
                 LabeledNumberField("", value: $profile.subscriptions, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Personal & entertainment", hint: "Clothing, hobbies, going out") {
+            formField(label: "Personal & entertainment", hint: "Clothing, hobbies, going out, anything else you budget for") {
                 LabeledNumberField("", value: $profile.personal, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
@@ -582,14 +609,14 @@ struct OnboardingSetupView: View {
 
     private var goalsStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-            sectionHeader(icon: "target", title: "Goals & planning style", subtitle: "Savings and how you budget", accent: Colors.pistachio)
-            formField(label: "Monthly savings goal", hint: "Amount to put away each month") {
+            sectionHeader(icon: "target", title: "Goals & planning style", subtitle: "Set a savings goal and choose whether you like to plan by month or by semester. You can change this later.", accent: Colors.pistachio)
+            formField(label: "Monthly savings goal", hint: "How much you want to put away each month — we'll help you see if you're on track") {
                 LabeledNumberField("", value: $profile.savingsGoal, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Monthly investments", hint: "Stocks, crypto — 0 if none") {
+            formField(label: "Monthly investments", hint: "Stocks, crypto, or other investments — enter 0 if you don't invest yet") {
                 LabeledNumberField("", value: $profile.investments, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Planning style", hint: "How you track your budget") {
+            formField(label: "Planning style", hint: "Monthly: track week by week. Semester: plan around tuition and term dates.") {
                 Picker("Planning style", selection: $profile.budgetStyle) {
                     Text("Per Month").tag(BudgetInput.BudgetStyle.monthly)
                     Text("Per Semester").tag(BudgetInput.BudgetStyle.semester)

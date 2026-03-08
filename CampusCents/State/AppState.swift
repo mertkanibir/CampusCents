@@ -1,5 +1,3 @@
-//we had assistance from AI for the insights and ideas
-
 import SwiftUI
 import Combine
 
@@ -59,7 +57,6 @@ final class AppState: ObservableObject {
         return min(100, max(0, score))
     }
 
-    /// Colors from recent activity (transaction categories) for the dynamic header gradient.
     var activityGradientColors: [Color] {
         let recent = transactions.sorted { $0.date > $1.date }.prefix(12)
         var seen: Set<BudgetCategory.Kind> = []
@@ -115,23 +112,36 @@ final class AppState: ObservableObject {
 
     func updateBudget(for kind: BudgetCategory.Kind, value: Double) {
         guard let index = categories.firstIndex(where: { $0.kind == kind }) else { return }
-        categories[index].budget = max(0, value)
-        
-        if kind == .income {
-            profile.monthlyIncome = max(0, value)
-            categories[index].spent = max(0, value)
-        } else if kind == .savings {
-            profile.savings = max(0, value)
-            categories[index].spent = max(0, value)
-        } else if kind == .investment {
-            profile.investments = max(0, value)
-        } else if case .custom(let id, _, _, _, _, _) = kind {
+        let safe = max(0, value)
+        categories[index].budget = safe
+
+        switch kind {
+        case .income:
+            profile.monthlyIncome = safe
+            categories[index].spent = safe
+        case .savings:
+            profile.savings = safe
+            categories[index].spent = safe
+        case .investment:
+            profile.investments = safe
+        case .tuition: profile.tuition = safe
+        case .rent: profile.rent = safe
+        case .utilities: profile.utilities = safe
+        case .mealPlan: profile.mealPlan = safe
+        case .groceries: profile.groceries = safe
+        case .transportation: profile.transportation = safe
+        case .subscriptions: profile.subscriptions = safe
+        case .personal: profile.personal = safe
+        case .aid: profile.scholarshipsAid = safe
+        case .custom(let id, _, _, _, _, _):
             if let customIdx = profile.customCategories.firstIndex(where: {
                 if case .custom(let cid, _, _, _, _, _) = $0.kind { return cid == id }
                 return false
             }) {
-                profile.customCategories[customIdx].budget = max(0, value)
+                profile.customCategories[customIdx].budget = safe
             }
+        default:
+            break
         }
     }
 
@@ -205,7 +215,6 @@ final class AppState: ObservableObject {
         recurring = []
     }
 
-    /// Clears all data and returns the app to onboarding (e.g. “Delete account”).
     func deleteAccount() {
         hasCompletedOnboarding = false
         profile = .emptyForOnboarding

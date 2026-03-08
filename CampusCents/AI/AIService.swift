@@ -111,12 +111,10 @@ actor AIService {
         return fallbackEngine.scenarioInsight(for: input)
     }
 
-    /// Parses natural-language transaction text. Uses a reliable rule-based parser first; if Apple Foundation Models are available, tries AI and only uses it when the result is valid (so bad AI output never wins).
     func parseTransaction(from userText: String, categoryKeys: [String]) async -> ParsedTransactionInput? {
         let trimmed = userText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
-        // Always run fallback first — it's reliable and works without AI.
         let fallbackResult = fallbackEngine.parseTransactionFallback(trimmed)
 
         guard availability().isAvailable else {
@@ -137,7 +135,6 @@ actor AIService {
                 let parsed = response.content
                 let title = parsed.transactionTitle.trimmingCharacters(in: .whitespacesAndNewlines)
                 let amount = max(0, parsed.amount)
-                // Only use AI result if it looks valid; otherwise keep fallback.
                 guard !title.isEmpty, amount > 0 else {
                     return fallbackResult
                 }

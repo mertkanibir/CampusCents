@@ -6,7 +6,6 @@ struct AvatarPickerView: View {
     @Binding var profile: StudentProfile
     @State private var selectedPhoto: PhotosPickerItem?
     @Environment(\.colorScheme) private var colorScheme
-    /// Use in onboarding so "Choose Profile Photo" is never black in dark mode. Default nil = system accent.
     var labelColor: Color? = nil
 
     private var effectiveLabelColor: Color {

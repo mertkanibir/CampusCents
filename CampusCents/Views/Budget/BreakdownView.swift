@@ -54,6 +54,7 @@ struct BreakdownView: View {
                 }
                 .padding()
             }
+            .overlay(alignment: .top) { TopSafeAreaGradientOverlay() }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingAddCategory) {
@@ -77,7 +78,6 @@ struct BreakdownView: View {
         }
     }
 
-    // MARK: - Hero card (same style as Afford / Insights / Add)
     private var heroCard: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 30, style: .continuous)
@@ -168,7 +168,6 @@ struct BreakdownView: View {
         }
     }
 
-    // MARK: - Planning & style card
     private var planningCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
@@ -218,7 +217,6 @@ struct BreakdownView: View {
         .shadow(color: .black.opacity(colorScheme == .dark ? 0.18 : 0.08), radius: 18, y: 10)
     }
 
-    // MARK: - Income card
     private var incomeCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
@@ -250,7 +248,6 @@ struct BreakdownView: View {
         .shadow(color: .black.opacity(colorScheme == .dark ? 0.16 : 0.08), radius: 16, y: 8)
     }
 
-    // MARK: - Expenditures card
     private var expendituresCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
@@ -282,7 +279,6 @@ struct BreakdownView: View {
         .shadow(color: .black.opacity(colorScheme == .dark ? 0.16 : 0.08), radius: 16, y: 8)
     }
 
-    // MARK: - Add custom category card (same pattern as Add tab's primary action)
     private var addCategoryCard: some View {
         Button {
             showingAddCategory = true

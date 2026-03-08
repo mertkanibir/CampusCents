@@ -73,6 +73,7 @@ struct InsightsView: View {
                 }
                 .padding()
             }
+            .overlay(alignment: .top) { TopSafeAreaGradientOverlay() }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .task(id: key) {

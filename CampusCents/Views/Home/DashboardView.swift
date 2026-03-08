@@ -35,6 +35,7 @@ struct DashboardView: View {
                     .padding()
                     .padding(.bottom, 24)
                 }
+                .overlay(alignment: .top) { TopSafeAreaGradientOverlay() }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)

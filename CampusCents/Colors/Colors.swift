@@ -11,6 +11,12 @@ enum Colors {
     static let pistachio = Color(red: 0.45, green: 0.76, blue: 0.23)
     static let blueMint = Color(red: 0.12, green: 0.74, blue: 0.79)
 
+    static func backgroundTop(for scheme: ColorScheme) -> Color {
+        scheme == .dark
+            ? Color(red: 0.08, green: 0.10, blue: 0.18)
+            : Color(red: 0.93, green: 0.97, blue: 1.00)
+    }
+
     static func appGradient(for scheme: ColorScheme) -> LinearGradient {
         LinearGradient(
             colors: scheme == .dark

@@ -153,7 +153,6 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             }
         }
 
-        /// Stable key for AI/parsing (e.g. "personal", "groceries"). Used when parsing natural-language transactions.
         var kindKey: String {
             switch self {
             case .income: return "income"
@@ -172,7 +171,6 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             }
         }
 
-        /// Parses a category key (e.g. from AI) into a Kind. Returns nil for unknown or custom keys.
         static func kind(forKey key: String) -> BudgetCategory.Kind? {
             switch key.lowercased() {
             case "income": return .income
@@ -209,7 +207,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
     }
 
     static func from(profile: StudentProfile) -> [BudgetCategory] {
-        let kinds: [Kind] = [.income, .savings, .investment, .tuition, .rent, .groceries, .subscriptions, .personal]
+        let kinds: [Kind] = [.income, .savings, .investment, .tuition, .aid, .rent, .utilities, .mealPlan, .groceries, .transportation, .subscriptions, .personal]
         var categories = kinds.map { kind in
             let budget: Double
             switch kind {
@@ -217,8 +215,12 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .savings: budget = profile.savings
             case .investment: budget = profile.investments
             case .tuition: budget = profile.tuition
+            case .aid: budget = profile.scholarshipsAid
             case .rent: budget = profile.rent
+            case .utilities: budget = profile.utilities
+            case .mealPlan: budget = profile.mealPlan
             case .groceries: budget = profile.groceries
+            case .transportation: budget = profile.transportation
             case .subscriptions: budget = profile.subscriptions
             case .personal: budget = profile.personal
             default: budget = 0
@@ -232,10 +234,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
                 color: .init(kind.tint)
             )
         }
-        
-        // Add custom categories
         categories.append(contentsOf: profile.customCategories)
-        
         return categories
     }
 

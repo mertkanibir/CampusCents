@@ -95,7 +95,6 @@ enum Prompts: Sendable {
         """
     }
 
-    /// Short, focused instruction so the model only does extraction (no budgeting advice).
     nonisolated static let transactionParseInstruction = """
     You only extract one expense from the user's message. Output exactly: transactionTitle (Title Case, no numbers or currency), amount (number), categoryKey (one of the allowed keys), dateDescription ("today", "yesterday", or YYYY-MM-DD). No other text.
     """

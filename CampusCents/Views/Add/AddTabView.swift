@@ -7,7 +7,6 @@ struct AddTabView: View {
     @State private var addSheetPrefill: TransactionTemplate?
     @State private var showingRecurringSheet = false
 
-    // AI add-with-text
     @State private var aiInputText = ""
     @State private var parsedInput: ParsedTransactionInput?
     @State private var isParsing = false
@@ -44,6 +43,7 @@ struct AddTabView: View {
                 }
                 .padding()
             }
+            .overlay(alignment: .top) { TopSafeAreaGradientOverlay() }
             .navigationBarHidden(true)
             .sheet(isPresented: $showingAddSheet) {
                 AddTransactionView(prefill: addSheetPrefill)
@@ -57,7 +57,6 @@ struct AddTabView: View {
         }
     }
 
-    // MARK: - Hero card (same style as Afford / Insights)
     private var heroCard: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 30, style: .continuous)
@@ -148,7 +147,6 @@ struct AddTabView: View {
         }
     }
 
-    // MARK: - Add with AI card
     private var addWithAICard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -242,7 +240,6 @@ struct AddTabView: View {
         .shadow(color: .black.opacity(colorScheme == .dark ? 0.18 : 0.08), radius: 18, y: 10)
     }
 
-    // MARK: - Main Add transaction button (prettier, prominent)
     private var addTransactionButtonCard: some View {
         Button {
             addSheetPrefill = nil
@@ -286,7 +283,6 @@ struct AddTabView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Suggestions (templates; tap opens add sheet with prefill)
     private var suggestionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Suggestions")
@@ -333,7 +329,6 @@ struct AddTabView: View {
         }
     }
 
-    // MARK: - Recurring (same content, consistent card style)
     private var recurringSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -422,7 +417,6 @@ struct AddTabView: View {
         .background(Color.primary.opacity(colorScheme == .dark ? 0.08 : 0.03), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
-    // MARK: - Actions
     private func parseAndShow() async {
         let text = aiInputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }

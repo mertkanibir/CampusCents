@@ -1,5 +1,3 @@
-//got help from AI for the fall-back mechanism
-
 import Foundation
 
 struct FallbackEngine: Sendable {
@@ -145,7 +143,6 @@ struct FallbackEngine: Sendable {
         )
     }
 
-    /// Rule-based parse when Foundation Models are unavailable. Extracts amount, cleans title (e.g. "10 dollars for uber eats" -> "Uber Eats" $10), and date.
     nonisolated func parseTransactionFallback(_ userText: String) -> ParsedTransactionInput? {
         let trimmed = userText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
@@ -156,7 +153,6 @@ struct FallbackEngine: Sendable {
         let lower = trimmed.lowercased()
         if lower.contains("yesterday") { dateDescription = "yesterday" }
 
-        // 1) Extract amount: match number with optional $ / "dollars" / "for" / "on"
         let amountPattern = #"(?:^\$?\s*|\s+)(\d+(?:[.,]\d+)?)\s*(?:\$|dollars?|for|on|at|$)"#
         if let regex = try? NSRegularExpression(pattern: amountPattern, options: .caseInsensitive),
            let match = regex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
@@ -189,7 +185,6 @@ struct FallbackEngine: Sendable {
             }
         }
 
-        // 2) Clean title: drop amount-related and filler words, then Title Case
         let stopWords = [" for ", " on ", " at ", " dollars", " dollar", " spent", " paid", " cost", " - ", " – "]
         var cleaned = title
         for w in stopWords {
@@ -208,7 +203,6 @@ struct FallbackEngine: Sendable {
         }
         if title.isEmpty { title = "Expense" }
 
-        // 3) Infer category from keywords (e.g. "uber eats" -> mealPlan)
         let categoryKey = Self.inferCategoryKey(title: title, originalInput: lower)
 
         return ParsedTransactionInput(

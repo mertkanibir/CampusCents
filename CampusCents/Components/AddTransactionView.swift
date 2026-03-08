@@ -61,7 +61,6 @@ struct AddTransactionView: View {
         }
     }
 
-    // MARK: - Suggestions (templates; tap to prefill)
     private var suggestionsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Suggestions")
@@ -117,7 +116,6 @@ struct AddTransactionView: View {
         }
     }
 
-    // MARK: - Form card (same input style as Afford / Insights)
     private var formCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Transaction")

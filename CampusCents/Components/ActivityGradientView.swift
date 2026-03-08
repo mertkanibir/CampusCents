@@ -1,11 +1,7 @@
 import SwiftUI
 
-/// A dynamic gradient from recent activity categories that fades into the screen (Apple Card–inspired).
-/// Shorter band that only passes the first card, with a soft vertical fade so there’s no hard edge.
 struct ActivityGradientView: View {
     let colors: [Color]
-
-    /// Softer, Apple Card–style: use up to 3 colors and blend gently so it’s not a harsh stripe.
     private var baseGradient: LinearGradient {
         let palette = colors.isEmpty ? [Colors.sky, Colors.lavender] : Array(colors.prefix(3))
         guard palette.count >= 2 else {
@@ -23,7 +19,6 @@ struct ActivityGradientView: View {
         return LinearGradient(stops: stops, startPoint: .leading, endPoint: .trailing)
     }
 
-    /// Vertical mask: full opacity at top, transparent at bottom so it fades into the home screen.
     private var fadeMask: LinearGradient {
         LinearGradient(
             stops: [

@@ -110,6 +110,7 @@ struct AffordabilityView: View {
                 }
                 .padding()
             }
+            .overlay(alignment: .top) { TopSafeAreaGradientOverlay() }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showScenarioSheet) {

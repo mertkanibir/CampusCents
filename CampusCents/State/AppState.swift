@@ -33,15 +33,16 @@ final class AppState: ObservableObject {
     }
 
     var total: Double {
-        categories.filter { $0.kind != .aid && $0.kind != .income }.map(\.budget).reduce(0, +)
+        categories.filter { !$0.kind.isIncome && $0.kind != .aid }.map(\.budget).reduce(0, +)
     }
 
     var spent: Double {
-        categories.filter { $0.kind != .aid && $0.kind != .income }.map(\.spent).reduce(0, +)
+        categories.filter { !$0.kind.isIncome && $0.kind != .aid }.map(\.spent).reduce(0, +)
     }
 
     var remaining: Double {
-        max(0, total - spent)
+        let totalIncome = categories.filter { $0.kind.isIncome }.map(\.budget).reduce(0, +)
+        return max(0, totalIncome - total)
     }
 
     var fixedSpend: Double {
@@ -158,6 +159,7 @@ final class AppState: ObservableObject {
         let kind = BudgetCategory.Kind.custom(
             id: id,
             name: name,
+            desc: "",
             icon: "star.fill",
             tint: ColorValue(color),
             isIncome: isIncome

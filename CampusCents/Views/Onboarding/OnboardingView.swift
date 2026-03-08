@@ -526,16 +526,11 @@ struct OnboardingSetupView: View {
 
     private var incomeStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-<<<<<<< HEAD
-            sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Per month unless noted", accent: Colors.mint)
+            sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Your income and school costs drive your budget. Enter amounts per month unless we say otherwise (e.g. tuition per term).", accent: Colors.mint)
             formField(label: "Current savings", hint: "Money already in the bank") {
                 LabeledNumberField("", value: $profile.savings, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Monthly income", hint: "Jobs, side gigs, allowance") {
-=======
-            sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Your income and school costs drive your budget. Enter amounts per month unless we say otherwise (e.g. tuition per term).", accent: Colors.mint)
             formField(label: "Monthly income", hint: "Jobs, side gigs, allowance — what you actually take in each month") {
->>>>>>> refs/remotes/origin/main
                 LabeledNumberField("", value: $profile.monthlyIncome, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Tuition per term", hint: "Total tuition for one term (fall, spring, or summer)") {

@@ -17,10 +17,22 @@ struct OnboardingView: View {
         return step
     }
 
-    private var welcomeBackground: LinearGradient {
-        let bg = Color(red: 0, green: 94/255, blue: 64/255) // #005E40
+    /// Binghamton green (#005A43) — same in light and dark.
+    private static var binghamtonGreen: Color {
+        Color(red: 0, green: 90/255, blue: 67/255)
+    }
+
+    /// Welcome page: Binghamton green with a very minimal gradient (barely shifts toward scheme).
+    private var welcomePageBackground: LinearGradient {
+        let base = Self.binghamtonGreen
+        let endColor: Color
+        if colorScheme == .dark {
+            endColor = base.opacity(0.94)
+        } else {
+            endColor = base.opacity(0.97)
+        }
         return LinearGradient(
-            colors: [bg, bg.opacity(0.95)],
+            colors: [base, endColor],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -41,11 +53,11 @@ struct OnboardingView: View {
     }
 
     private var primaryLabel: Color {
-        page == 0 ? .white : (colorScheme == .dark ? .white : .primary)
+        colorScheme == .dark ? .white : .primary
     }
 
     private var secondaryLabel: Color {
-        page == 0 ? .white.opacity(0.8) : (colorScheme == .dark ? .white.opacity(0.8) : .secondary)
+        colorScheme == .dark ? .white.opacity(0.84) : Color.primary.opacity(0.68)
     }
 
     var body: some View {
@@ -109,10 +121,12 @@ struct OnboardingView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            ZStack {
-                welcomeBackground
-                appBackground
-                    .opacity(page > 0 ? 1 : 0)
+            Group {
+                if page == 0 {
+                    welcomePageBackground
+                } else {
+                    appBackground
+                }
             }
             .ignoresSafeArea()
         }
@@ -146,41 +160,48 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Welcome
+    // MARK: - Welcome (card layout to match features/setup)
     private var welcomePage: some View {
-        VStack(spacing: 24) {
-            Spacer()
-                .frame(maxHeight: 40)
-            Image("CampusCentsIcon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 140, height: 140)
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                .shadow(color: .black.opacity(colorScheme == .dark ? 0.4 : 0.12), radius: 24, y: 8)
+        ScrollView {
+            VStack(spacing: 24) {
+                Image("CampusCentsIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                    .shadow(color: .black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 16, y: 6)
+                    .padding(.top, 32)
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Welcome to CampusCents")
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(primaryLabel)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                Text("Your intelligent budgeting companion for student life.")
-                    .font(.title3)
-                    .foregroundStyle(secondaryLabel)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                VStack(alignment: .leading, spacing: 8) {
-                    bulletRow("Quick setup — we'll guide you step by step")
-                    bulletRow("Track spending and see where your money goes")
-                    bulletRow("AI-powered insights tailored to your budget")
-                    bulletRow("Know what you can afford before you buy")
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(spacing: 6) {
+                        Text("Welcome to CampusCents")
+                            .font(.title.weight(.bold))
+                            .foregroundStyle(primaryLabel)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                        Text("Your intelligent budgeting companion for student life.")
+                            .font(.subheadline)
+                            .foregroundStyle(secondaryLabel)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        bulletRow("Quick setup — we'll guide you step by step")
+                        bulletRow("Track spending and see where your money goes")
+                        bulletRow("AI-powered insights tailored to your budget")
+                        bulletRow("Know what you can afford before you buy")
+                    }
                 }
-                .padding(.top, 4)
+                .padding(22)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1))
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
             }
-            .padding(.horizontal, 28)
-            Spacer()
         }
-        .padding(.vertical, 24)
+        .scrollIndicators(.hidden)
     }
 
     private func bulletRow(_ text: String) -> some View {

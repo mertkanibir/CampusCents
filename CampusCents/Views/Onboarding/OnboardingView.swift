@@ -32,6 +32,7 @@ struct OnboardingView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .id(page)
             .transition(.asymmetric(
                 insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -53,7 +54,7 @@ struct OnboardingView: View {
 
             if page < 2 {
                 Button("Continue") {
-                    withAnimation(.easeInOut(duration: 0.3)) {
+                    withAnimation(.smooth(duration: 0.4)) {
                         page += 1
                     }
                 }
@@ -65,7 +66,7 @@ struct OnboardingView: View {
         .padding(.top, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Self.onboardingBackground)
-        .animation(.easeInOut(duration: 0.3), value: page)
+        .animation(.smooth(duration: 0.4), value: page)
     }
 }
 

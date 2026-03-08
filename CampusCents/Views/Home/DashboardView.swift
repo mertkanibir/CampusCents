@@ -9,10 +9,7 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     SummaryCard()
-                    HStack(spacing: 12) {
-                        RingCard(title: "Spent", value: state.spent, total: state.total, tint: Colors.rose)
-                        RingCard(title: "Remaining", value: state.remaining, total: state.total, tint: Colors.mint)
-                    }
+                    SpentRemainingCard()
                     SnapshotCard()
                     RecentTransactionsCard(transactions: state.transactions.sorted(by: { $0.date > $1.date }))
                 }

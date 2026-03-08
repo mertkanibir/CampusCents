@@ -3,11 +3,13 @@ import SwiftUI
 struct LabeledNumberField: View {
     let title: String
     @Binding var value: Double
+    var labelColor: Color = .secondary
     @State private var text: String = ""
 
-    init(_ title: String, value: Binding<Double>) {
+    init(_ title: String, value: Binding<Double>, labelColor: Color = .secondary) {
         self.title = title
         self._value = value
+        self.labelColor = labelColor
         self._text = State(initialValue: String(format: "%.0f", value.wrappedValue))
     }
 
@@ -15,7 +17,7 @@ struct LabeledNumberField: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(labelColor)
             TextField(title, text: $text)
                 .keyboardType(.decimalPad)
                 .textFieldStyle(.roundedBorder)

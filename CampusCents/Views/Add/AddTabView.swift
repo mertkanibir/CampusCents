@@ -43,7 +43,7 @@ struct AddTabView: View {
                 }
                 .padding()
             }
-            .overlay(alignment: .top) { TopSafeAreaGradientOverlay() }
+            .overlay(alignment: .top) { ScrollEdgeOverlay() }
             .navigationBarHidden(true)
             .sheet(isPresented: $showingAddSheet) {
                 AddTransactionView(prefill: addSheetPrefill)

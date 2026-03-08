@@ -1,8 +1,5 @@
 import SwiftUI
 
-// MARK: - Unified Onboarding (8 pages: welcome + 1 features + 6 setup)
-// Page indices 0–7: 0 = welcome, 1 = combined features, 2–7 = setup steps
-
 struct OnboardingView: View {
     @EnvironmentObject var state: AppState
     @Environment(\.colorScheme) var colorScheme
@@ -17,12 +14,10 @@ struct OnboardingView: View {
         return step
     }
 
-    /// Binghamton green (#005A43) — same in light and dark.
     private static var binghamtonGreen: Color {
         Color(red: 0, green: 90/255, blue: 67/255)
     }
 
-    /// Welcome page: Binghamton green with a very minimal gradient (barely shifts toward scheme).
     private var welcomePageBackground: LinearGradient {
         let base = Self.binghamtonGreen
         let endColor: Color
@@ -38,7 +33,6 @@ struct OnboardingView: View {
         )
     }
 
-    /// Background for features + setup pages: more green tint to match CampusCents branding.
     private var appBackground: LinearGradient {
         if colorScheme == .dark {
             return LinearGradient(
@@ -72,7 +66,6 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Content (no "1 of 8" label — user requested removal)
             Group {
                 switch page {
                 case 0:
@@ -90,7 +83,6 @@ struct OnboardingView: View {
                 removal: .move(edge: isGoingForward ? .leading : .trailing)
             ))
 
-            // Progress dots (8 pages)
             HStack(spacing: 6) {
                 ForEach(0..<totalPages, id: \.self) { i in
                     Capsule()
@@ -102,7 +94,6 @@ struct OnboardingView: View {
             .padding(.top, 16)
             .padding(.bottom, 12)
 
-            // Bottom button(s)
             HStack(spacing: 12) {
                 if page > 0 {
                     Button {
@@ -170,7 +161,6 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Welcome (minimal: icon, title, subtitle only — white text on green in both schemes)
     private var welcomePage: some View {
         VStack(spacing: 24) {
             Spacer(minLength: 40)
@@ -199,7 +189,6 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Combined features (one page: track + AI + afford)
     private var combinedFeaturesPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -328,7 +317,6 @@ struct OnboardingView: View {
         .background(tint.opacity(0.2), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
-    // MARK: - Setup content
     private var setupContent: some View {
         OnboardingSetupView(
             profile: $draftProfile,
@@ -338,7 +326,6 @@ struct OnboardingView: View {
     }
 }
 
-// MARK: - Button style (accent + light/dark)
 struct OnboardingButtonStyle: ButtonStyle {
     var accent: Color = Colors.mint
     var isFilled: Bool = true
@@ -361,7 +348,6 @@ struct OnboardingButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Setup steps (6 steps, pages 2–7)
 enum SetupStep: Int, CaseIterable {
     case profile, income, housing, food, expenses, goals
 }
@@ -388,7 +374,6 @@ private func isWizardStepComplete(profile: StudentProfile, step: SetupStep) -> B
     }
 }
 
-// MARK: - Setup form (adaptive light/dark)
 struct OnboardingSetupView: View {
     @Binding var profile: StudentProfile
     @Binding var currentStep: SetupStep

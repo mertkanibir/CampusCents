@@ -38,19 +38,16 @@ final class AppState: ObservableObject {
         categories.filter { !$0.kind.isIncome && $0.kind != .aid }.map(\.spent).reduce(0, +)
     }
 
-    /// Total money available this period: income + savings per month + aid (all inflows).
     var totalAvailable: Double {
         categories.filter { $0.kind.isIncome || $0.kind == .aid }.map(\.budget).reduce(0, +)
     }
 
-    /// Effective expenses: for each expense category we assume we'll spend at least max(spent, budget).
     var effectiveExpenses: Double {
         categories
             .filter { !$0.kind.isIncome && $0.kind != .aid }
             .reduce(0) { $0 + max($1.spent, $1.budget) }
     }
 
-    /// Remaining = Income + Savings + Aid − (Tuition + all other expenses), using max(spent, budget) per expense category.
     var remaining: Double {
         totalAvailable - effectiveExpenses
     }

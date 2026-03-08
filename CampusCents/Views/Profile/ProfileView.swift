@@ -6,7 +6,6 @@ struct ProfileView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Profile header: large avatar + name, centered
             VStack(spacing: 12) {
                 AvatarView(profile: state.profile, size: 96)
                 Text(state.profile.name.isEmpty ? "Your name" : state.profile.name)

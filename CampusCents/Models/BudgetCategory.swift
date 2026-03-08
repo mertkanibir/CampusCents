@@ -157,6 +157,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         var kindKey: String {
             switch self {
             case .income: return "income"
+            case .savings: return "savings"
             case .investment: return "investment"
             case .tuition: return "tuition"
             case .aid: return "aid"
@@ -175,6 +176,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         static func kind(forKey key: String) -> BudgetCategory.Kind? {
             switch key.lowercased() {
             case "income": return .income
+            case "savings": return .savings
             case "investment": return .investment
             case "tuition": return .tuition
             case "aid": return .aid

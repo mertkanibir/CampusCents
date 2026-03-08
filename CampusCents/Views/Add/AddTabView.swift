@@ -44,8 +44,7 @@ struct AddTabView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Add")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarHidden(true)
             .sheet(isPresented: $showingAddSheet) {
                 AddTransactionView(prefill: addSheetPrefill)
                     .environmentObject(state)
@@ -104,22 +103,6 @@ struct AddTabView: View {
                 .offset(x: -40, y: 100)
 
             VStack(alignment: .leading, spacing: 16) {
-                Label("Quick log", systemImage: "plus.circle.fill")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(colorScheme == .dark ? Color.white : Colors.periwinkle)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(
-                        colorScheme == .dark
-                            ? Color.white.opacity(0.12)
-                            : Colors.periwinkle.opacity(0.12),
-                        in: Capsule()
-                    )
-                    .overlay {
-                        Capsule()
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : Colors.periwinkle.opacity(0.16), lineWidth: 1)
-                    }
-
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Log expenses in seconds.")
                         .font(.system(size: 28, weight: .bold, design: .rounded))

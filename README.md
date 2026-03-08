@@ -24,18 +24,18 @@ Open the project in Xcode and run it on an iOS simulator or device.
 # TO-DO
 ## HIGH PRIORITY
 - AI chatbot & insights integration [x]
-- Remake onboarding [ ] 
-- Use appleID profile images? [ ] REVOKED
+- Remake onboarding [x] 
+- Use appleID profile images? [ ]
 - Clean up UI [ ]
 - Profile [ ]
-- Insights rework [ ]
+- Insights rework [x]
 - Add in major calculations to README or additional markdown [ ]
 - REDO budget page - lp [ ]
 - Scrolling down the time overlaps the contents - add fade under? [ ]
 - "Check if a purchase fit.." gets cut off
 - FIX LIGHT MODE [ ]
-- Make notable when overbudget !!!!
-- Meal plan should be per semester, or option for month if user wants
+- Make notable when overbudget []
+- Meal plan should be per semester, or option for month if user wants []
 
   
 ## LOW PRIORITY

@@ -20,6 +20,10 @@ struct SummaryCard: View {
         state.remaining / Double(daysLeftInMonth)
     }
 
+    private var isOverBudget: Bool {
+        state.remaining < 0
+    }
+
     private let rowSpacing: CGFloat = 6
     private let columnSpacing: CGFloat = 12
     private let cellPaddingH: CGFloat = 12
@@ -33,7 +37,7 @@ struct SummaryCard: View {
                     label: "\(daysLeftInMonth) days left",
                     value: "~\(dailyBudget.currency)/day",
                     valueFont: .system(size: 28, weight: .bold),
-                    valueColor: colorScheme == .dark ? Colors.mint : Colors.periwinkle
+                    valueColor: isOverBudget ? Colors.rose : (colorScheme == .dark ? Colors.mint : Colors.periwinkle)
                 )
                 metricBlock(
                     title: "Income",
@@ -47,7 +51,7 @@ struct SummaryCard: View {
                     label: "Remaining",
                     value: state.remaining.currency,
                     valueFont: .system(size: 32, weight: .bold),
-                    valueColor: .primary
+                    valueColor: isOverBudget ? Colors.rose : .primary
                 )
                 metricBlock(
                     title: "Spent",

@@ -38,9 +38,21 @@ final class AppState: ObservableObject {
         categories.filter { !$0.kind.isIncome && $0.kind != .aid }.map(\.spent).reduce(0, +)
     }
 
+    /// Total money available this period: income + savings per month + aid (all inflows).
+    var totalAvailable: Double {
+        categories.filter { $0.kind.isIncome || $0.kind == .aid }.map(\.budget).reduce(0, +)
+    }
+
+    /// Effective expenses: for each expense category we assume we'll spend at least max(spent, budget).
+    var effectiveExpenses: Double {
+        categories
+            .filter { !$0.kind.isIncome && $0.kind != .aid }
+            .reduce(0) { $0 + max($1.spent, $1.budget) }
+    }
+
+    /// Remaining = Income + Savings + Aid − (Tuition + all other expenses), using max(spent, budget) per expense category.
     var remaining: Double {
-        let totalIncome = categories.filter { $0.kind.isIncome }.map(\.budget).reduce(0, +)
-        return max(0, totalIncome - total)
+        totalAvailable - effectiveExpenses
     }
 
     var fixedSpend: Double {
@@ -113,36 +125,47 @@ final class AppState: ObservableObject {
     func updateBudget(for kind: BudgetCategory.Kind, value: Double) {
         guard let index = categories.firstIndex(where: { $0.kind == kind }) else { return }
         let safe = max(0, value)
-        categories[index].budget = safe
 
+        var updatedCategories = categories
+        updatedCategories[index].budget = safe
         switch kind {
         case .income:
-            profile.monthlyIncome = safe
-            categories[index].spent = safe
+            updatedCategories[index].spent = safe
         case .savings:
-            profile.savings = safe
-            categories[index].spent = safe
+            updatedCategories[index].spent = safe
+        default:
+            break
+        }
+        categories = updatedCategories
+
+        var updatedProfile = profile
+        switch kind {
+        case .income:
+            updatedProfile.monthlyIncome = safe
+        case .savings:
+            updatedProfile.savings = safe
         case .investment:
-            profile.investments = safe
-        case .tuition: profile.tuition = safe
-        case .rent: profile.rent = safe
-        case .utilities: profile.utilities = safe
-        case .mealPlan: profile.mealPlan = safe
-        case .groceries: profile.groceries = safe
-        case .transportation: profile.transportation = safe
-        case .subscriptions: profile.subscriptions = safe
-        case .personal: profile.personal = safe
-        case .aid: profile.scholarshipsAid = safe
+            updatedProfile.investments = safe
+        case .tuition: updatedProfile.tuition = safe
+        case .rent: updatedProfile.rent = safe
+        case .utilities: updatedProfile.utilities = safe
+        case .mealPlan: updatedProfile.mealPlan = safe
+        case .groceries: updatedProfile.groceries = safe
+        case .transportation: updatedProfile.transportation = safe
+        case .subscriptions: updatedProfile.subscriptions = safe
+        case .personal: updatedProfile.personal = safe
+        case .aid: updatedProfile.scholarshipsAid = safe
         case .custom(let id, _, _, _, _, _):
-            if let customIdx = profile.customCategories.firstIndex(where: {
+            if let customIdx = updatedProfile.customCategories.firstIndex(where: {
                 if case .custom(let cid, _, _, _, _, _) = $0.kind { return cid == id }
                 return false
             }) {
-                profile.customCategories[customIdx].budget = safe
+                updatedProfile.customCategories[customIdx].budget = safe
             }
         default:
             break
         }
+        profile = updatedProfile
     }
 
     func addCustomCategory(name: String, desc: String, budget: Double, isIncome: Bool, icon: String, color: Color) {

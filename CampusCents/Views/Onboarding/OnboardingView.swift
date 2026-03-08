@@ -73,7 +73,7 @@ struct OnboardingView: View {
                 case 2:
                     featurePage(
                         icon: "sparkles.rectangle.stack",
-                        title: "AI budget snapshot",
+                        title: "AI Budget Insights",
                         subtitle: "Get personalized insights and tips powered by on-device AI.",
                         accent: Colors.periwinkle,
                         mockContent: snapshotMockContent
@@ -256,26 +256,51 @@ struct OnboardingView: View {
     }
 
     private func snapshotMockContent() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("AI Snapshot", systemImage: "sparkles.rectangle.stack")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [Colors.periwinkle, Colors.rose], startPoint: .leading, endPoint: .trailing)
-                    )
+        VStack(alignment: .leading, spacing: 12) {
+            // Existing AI snapshot card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label("AI Snapshot", systemImage: "sparkles.rectangle.stack")
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(
+                            LinearGradient(colors: [Colors.periwinkle, Colors.rose], startPoint: .leading, endPoint: .trailing)
+                        )
+                }
+                Text("Your budget is in good shape. Room for occasional treats without stress.")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(primaryLabel)
             }
-            Text("Your budget is in good shape. Room for occasional treats without stress.")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(primaryLabel)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Colors.periwinkle.opacity(0.4), lineWidth: 1)
+            )
+
+            // New AI insights card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label("AI Insights", systemImage: "brain.head.profile")
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(
+                            LinearGradient(colors: [Colors.sky, Colors.pistachio], startPoint: .leading, endPoint: .trailing)
+                        )
+                }
+                Text("We’ll surface patterns in your spending and suggest small tweaks to stretch your budget further.")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(primaryLabel)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Colors.sky.opacity(0.4), lineWidth: 1)
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Colors.periwinkle.opacity(0.4), lineWidth: 1)
-        )
     }
 
     private func affordMockContent() -> some View {

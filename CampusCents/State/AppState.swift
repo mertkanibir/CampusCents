@@ -106,9 +106,9 @@ final class AppState: ObservableObject {
             categories[index].spent = max(0, value)
         } else if kind == .investment {
             profile.investments = max(0, value)
-        } else if case .custom(let id, _, _, _, _) = kind {
+        } else if case .custom(let id, _, _, _, _, _) = kind {
             if let customIdx = profile.customCategories.firstIndex(where: {
-                if case .custom(let cid, _, _, _, _) = $0.kind { return cid == id }
+                if case .custom(let cid, _, _, _, _, _) = $0.kind { return cid == id }
                 return false
             }) {
                 profile.customCategories[customIdx].budget = max(0, value)
@@ -116,9 +116,9 @@ final class AppState: ObservableObject {
         }
     }
 
-    func addCustomCategory(name: String, budget: Double, isIncome: Bool, color: Color) {
+    func addCustomCategory(name: String, desc: String, budget: Double, isIncome: Bool, icon: String, color: Color) {
         let idString = UUID().uuidString
-        let newKind = BudgetCategory.Kind.custom(id: idString, name: name, icon: isIncome ? "plus.circle.fill" : "bag.fill", tint: ColorValue(color), isIncome: isIncome)
+        let newKind = BudgetCategory.Kind.custom(id: idString, name: name, desc: desc, icon: icon, tint: ColorValue(color), isIncome: isIncome)
         let newCategory = BudgetCategory(id: UUID(), kind: newKind, name: name, budget: budget, spent: 0, color: ColorValue(color))
         
         categories.append(newCategory)

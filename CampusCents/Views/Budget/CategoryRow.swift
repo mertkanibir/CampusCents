@@ -8,10 +8,19 @@ struct CategoryRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Label(category.name, systemImage: category.kind.icon)
-                    .font(.headline)
-                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label(category.name, systemImage: category.kind.icon)
+                        .font(.headline)
+                        .foregroundStyle(colorScheme == .dark ? .white : .primary)
+                    
+                    if let desc = category.kind.desc, !desc.isEmpty {
+                        Text(desc)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.leading, 32)
+                    }
+                }
                 Spacer()
                 Text("\(category.spent.currency) / \(category.budget.currency)")
                     .font(.caption.weight(.semibold))

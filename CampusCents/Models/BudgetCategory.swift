@@ -13,7 +13,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         case transportation
         case subscriptions
         case personal
-        case custom(id: String, name: String, icon: String, tint: ColorValue, isIncome: Bool)
+        case custom(id: String, name: String, desc: String, icon: String, tint: ColorValue, isIncome: Bool)
 
         // Custom Codable implementation to support existing String values
         init(from decoder: Decoder) throws {
@@ -31,7 +31,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
                 case "subscriptions": self = .subscriptions
                 case "personal": self = .personal
                 default:
-                    self = .custom(id: str, name: str, icon: "star.fill", tint: ColorValue(Colors.peach), isIncome: false)
+                    self = .custom(id: str, name: str, desc: "", icon: "star.fill", tint: ColorValue(Colors.peach), isIncome: false)
                 }
                 return
             }
@@ -43,7 +43,8 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
                  let icon = try customDict.decode(String.self, forKey: .icon)
                  let tint = try customDict.decode(ColorValue.self, forKey: .tint)
                  let isIncome = try customDict.decode(Bool.self, forKey: .isIncome)
-                 self = .custom(id: id, name: name, icon: icon, tint: tint, isIncome: isIncome)
+                 let desc = try customDict.decodeIfPresent(String.self, forKey: .desc) ?? ""
+                 self = .custom(id: id, name: name, desc: desc, icon: icon, tint: tint, isIncome: isIncome)
                  return
             }
             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Invalid Kind"))
@@ -51,11 +52,12 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
         func encode(to encoder: Encoder) throws {
             switch self {
-            case .custom(let id, let name, let icon, let tint, let isIncome):
+            case .custom(let id, let name, let desc, let icon, let tint, let isIncome):
                 var container = encoder.container(keyedBy: CodingKeys.self)
                 var customDict = container.nestedContainer(keyedBy: CustomKeys.self, forKey: .custom)
                 try customDict.encode(id, forKey: .id)
                 try customDict.encode(name, forKey: .name)
+                try customDict.encode(desc, forKey: .desc)
                 try customDict.encode(icon, forKey: .icon)
                 try customDict.encode(tint, forKey: .tint)
                 try customDict.encode(isIncome, forKey: .isIncome)
@@ -84,7 +86,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case custom
         }
         private enum CustomKeys: String, CodingKey {
-            case id, name, icon, tint, isIncome
+            case id, name, desc, icon, tint, isIncome
         }
 
         var displayName: String {
@@ -100,7 +102,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: return "Transport"
             case .subscriptions: return "Subscriptions"
             case .personal: return "Personal"
-            case .custom(_, let name, _, _, _): return name
+            case .custom(_, let name, _, _, _, _): return name
             }
         }
 
@@ -117,7 +119,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: return "car.fill"
             case .subscriptions: return "play.circle.fill"
             case .personal: return "face.smiling.fill"
-            case .custom(_, _, let icon, _, _): return icon
+            case .custom(_, _, _, let icon, _, _): return icon
             }
         }
 
@@ -134,16 +136,21 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             case .transportation: return Colors.periwinkle
             case .subscriptions: return Colors.pistachio
             case .personal: return Colors.peach
-            case .custom(_, _, _, let tint, _): return tint.color
+            case .custom(_, _, _, _, let tint, _): return tint.color
             }
         }
         
         var isIncome: Bool {
             switch self {
             case .income: return true
-            case .custom(_, _, _, _, let isInc): return isInc
+            case .custom(_, _, _, _, _, let isInc): return isInc
             default: return false
             }
+        }
+        
+        var desc: String? {
+            if case .custom(_, _, let description, _, _, _) = self { return description }
+            return nil
         }
     }
 

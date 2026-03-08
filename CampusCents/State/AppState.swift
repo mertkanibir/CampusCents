@@ -120,6 +120,9 @@ final class AppState: ObservableObject {
         if kind == .income {
             profile.monthlyIncome = max(0, value)
             categories[index].spent = max(0, value)
+        } else if kind == .savings {
+            profile.savings = max(0, value)
+            categories[index].spent = max(0, value)
         } else if kind == .investment {
             profile.investments = max(0, value)
         } else if case .custom(let id, _, _, _, _, _) = kind {
@@ -238,8 +241,11 @@ final class AppState: ObservableObject {
             if !categories.contains(where: { $0.kind == .income }) {
                 categories.insert(.init(id: UUID(), kind: .income, name: "Monthly Income", budget: profile.monthlyIncome, spent: profile.monthlyIncome, color: .init(Colors.mint)), at: 0)
             }
+            if !categories.contains(where: { $0.kind == .savings }) {
+                categories.insert(.init(id: UUID(), kind: .savings, name: "Savings", budget: profile.savings, spent: profile.savings, color: .init(Colors.blueMint)), at: 1)
+            }
             if !categories.contains(where: { $0.kind == .investment }) {
-                categories.insert(.init(id: UUID(), kind: .investment, name: "Investments", budget: profile.investments, spent: 0, color: .init(Colors.periwinkle)), at: 1)
+                categories.insert(.init(id: UUID(), kind: .investment, name: "Investments", budget: profile.investments, spent: 0, color: .init(Colors.periwinkle)), at: 2)
             }
             
             transactions = decoded.transactions

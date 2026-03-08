@@ -6,6 +6,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
     var school: String
     var term: String
     var monthlyIncome: Double
+    var savings: Double
     var investments: Double
     var scholarshipsAid: Double
     var tuition: Double
@@ -28,6 +29,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         case school
         case term
         case monthlyIncome
+        case savings
         case investments
         case scholarshipsAid
         case tuition
@@ -57,6 +59,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school: "",
         term: "Spring \(Calendar.current.component(.year, from: Date()))",
         monthlyIncome: 0,
+        savings: 0,
         investments: 0,
         scholarshipsAid: 0,
         tuition: 0,
@@ -80,6 +83,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school: "Binghamton University",
         term: "Spring 2028",
         monthlyIncome: 700,
+        savings: 1500,
         investments: 200,
         scholarshipsAid: 5000,
         tuition: 6800,
@@ -103,6 +107,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school: String,
         term: String,
         monthlyIncome: Double,
+        savings: Double,
         investments: Double,
         scholarshipsAid: Double,
         tuition: Double,
@@ -124,6 +129,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         self.school = school
         self.term = term
         self.monthlyIncome = monthlyIncome
+        self.savings = savings
         self.investments = investments
         self.scholarshipsAid = scholarshipsAid
         self.tuition = tuition
@@ -148,6 +154,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school = try container.decode(String.self, forKey: .school)
         term = try container.decode(String.self, forKey: .term)
         monthlyIncome = try container.decode(Double.self, forKey: .monthlyIncome)
+        savings = try container.decodeIfPresent(Double.self, forKey: .savings) ?? 0
         investments = try container.decodeIfPresent(Double.self, forKey: .investments) ?? 0
         scholarshipsAid = try container.decodeIfPresent(Double.self, forKey: .scholarshipsAid) ?? 0
         tuition = try container.decodeIfPresent(Double.self, forKey: .tuition) ?? 0
@@ -172,6 +179,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         try container.encode(school, forKey: .school)
         try container.encode(term, forKey: .term)
         try container.encode(monthlyIncome, forKey: .monthlyIncome)
+        try container.encode(savings, forKey: .savings)
         try container.encode(investments, forKey: .investments)
         try container.encode(scholarshipsAid, forKey: .scholarshipsAid)
         try container.encode(tuition, forKey: .tuition)

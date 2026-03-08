@@ -33,6 +33,7 @@ Open the project in Xcode and run it on an iOS simulator or device.
 - REDO budget page - lp [ ]
 - Scrolling down the time overlaps the contents - add fade under? [ ]
 - "Check if a purchase fit.." gets cut off
+- FIX LIGHT MODE [ ]
 
   
 ## LOW PRIORITY

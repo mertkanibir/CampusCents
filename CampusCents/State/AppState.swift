@@ -33,11 +33,11 @@ final class AppState: ObservableObject {
     }
 
     var total: Double {
-        categories.filter { $0.kind != .aid }.map(\.budget).reduce(0, +)
+        categories.filter { $0.kind != .aid && $0.kind != .income }.map(\.budget).reduce(0, +)
     }
 
     var spent: Double {
-        categories.filter { $0.kind != .aid }.map(\.spent).reduce(0, +)
+        categories.filter { $0.kind != .aid && $0.kind != .income }.map(\.spent).reduce(0, +)
     }
 
     var remaining: Double {
@@ -99,6 +99,13 @@ final class AppState: ObservableObject {
     func updateBudget(for kind: BudgetCategory.Kind, value: Double) {
         guard let index = categories.firstIndex(where: { $0.kind == kind }) else { return }
         categories[index].budget = max(0, value)
+        
+        if kind == .income {
+            profile.monthlyIncome = max(0, value)
+            categories[index].spent = max(0, value)
+        } else if kind == .investment {
+            profile.investments = max(0, value)
+        }
     }
 
     func addTransaction(title: String, amount: Double, date: Date, category: BudgetCategory.Kind) {
@@ -179,6 +186,14 @@ final class AppState: ObservableObject {
             hasCompletedOnboarding = decoded.hasCompletedOnboarding
             profile = decoded.profile
             categories = decoded.categories
+            
+            if !categories.contains(where: { $0.kind == .income }) {
+                categories.insert(.init(id: UUID(), kind: .income, name: "Monthly Income", budget: profile.monthlyIncome, spent: profile.monthlyIncome, color: .init(Colors.mint)), at: 0)
+            }
+            if !categories.contains(where: { $0.kind == .investment }) {
+                categories.insert(.init(id: UUID(), kind: .investment, name: "Investments", budget: profile.investments, spent: 0, color: .init(Colors.periwinkle)), at: 1)
+            }
+            
             transactions = decoded.transactions
             restoring = false
         }

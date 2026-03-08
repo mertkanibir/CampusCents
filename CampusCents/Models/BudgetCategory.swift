@@ -2,6 +2,8 @@ import SwiftUI
 
 struct BudgetCategory: Identifiable, Hashable, Codable {
     enum Kind: String, CaseIterable, Codable {
+        case income
+        case investment
         case tuition
         case aid
         case rent
@@ -14,6 +16,8 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
         var displayName: String {
             switch self {
+            case .income: return "Income"
+            case .investment: return "Investments"
             case .tuition: return "Tuition"
             case .aid: return "Scholarships & Aid"
             case .rent: return "Rent"
@@ -28,6 +32,8 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
         var icon: String {
             switch self {
+            case .income: return "dollarsign.circle.fill"
+            case .investment: return "chart.pie.fill"
             case .tuition: return "graduationcap.fill"
             case .aid: return "gift.fill"
             case .rent: return "house.fill"
@@ -42,6 +48,8 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
         var tint: Color {
             switch self {
+            case .income: return Colors.mint
+            case .investment: return Colors.periwinkle
             case .tuition: return Colors.rose
             case .aid: return Colors.mint
             case .rent: return Colors.sky
@@ -67,6 +75,9 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
     }
 
     static let sample: [BudgetCategory] = [
+        .init(id: UUID(), kind: .income, name: "Monthly Income", budget: 700, spent: 700, color: .init(Colors.mint)),
+        .init(id: UUID(), kind: .investment, name: "Investments", budget: 200, spent: 0, color: .init(Colors.periwinkle)),
+        
         .init(id: UUID(), kind: .tuition, name: "Tuition", budget: 6200, spent: 6200, color: .init(Colors.rose)),
         .init(id: UUID(), kind: .aid, name: "Scholarships & Aid", budget: 3500, spent: 0, color: .init(Colors.mint)),
         .init(id: UUID(), kind: .rent, name: "Rent", budget: 750, spent: 750, color: .init(Colors.sky)),

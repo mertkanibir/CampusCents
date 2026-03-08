@@ -1,7 +1,7 @@
 import SwiftUI
 
-// MARK: - Unified Onboarding (10 pages: 4 feature previews + 6 setup)
-// Page indices 0–9, displayed as 1–10 to user
+// MARK: - Unified Onboarding (8 pages: welcome + 1 features + 6 setup)
+// Page indices 0–7: 0 = welcome, 1 = combined features, 2–7 = setup steps
 
 struct OnboardingView: View {
     @EnvironmentObject var state: AppState
@@ -10,10 +10,10 @@ struct OnboardingView: View {
     @State private var draftProfile: StudentProfile = .emptyForOnboarding
     @State private var isGoingForward = true
 
-    private var totalPages: Int { 10 }
-    private var isSetupPhase: Bool { page >= 4 }
+    private var totalPages: Int { 8 }
+    private var isSetupPhase: Bool { page >= 2 }
     private var setupStep: SetupStep {
-        guard page >= 4, let step = SetupStep(rawValue: page - 4) else { return .profile }
+        guard page >= 2, let step = SetupStep(rawValue: page - 2) else { return .profile }
         return step
     }
 
@@ -50,42 +50,13 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Page label (e.g. "1 of 9")
-            Text("\(page + 1) of \(totalPages)")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(secondaryLabel)
-                .padding(.top, 16)
-                .padding(.bottom, 8)
-
-            // Content
+            // Content (no "1 of 8" label — user requested removal)
             Group {
                 switch page {
                 case 0:
                     welcomePage
                 case 1:
-                    featurePage(
-                        icon: "chart.pie.fill",
-                        title: "Track your money",
-                        subtitle: "See exactly where your cash goes with clear budgets and daily insights.",
-                        accent: Colors.mint,
-                        mockContent: trackMockContent
-                    )
-                case 2:
-                    featurePage(
-                        icon: "sparkles.rectangle.stack",
-                        title: "AI Budget Insights",
-                        subtitle: "Get personalized insights and tips powered by on-device AI.",
-                        accent: Colors.periwinkle,
-                        mockContent: snapshotMockContent
-                    )
-                case 3:
-                    featurePage(
-                        icon: "questionmark.circle.fill",
-                        title: "Can I afford it?",
-                        subtitle: "Before you buy, see how it affects your budget in real time.",
-                        accent: Colors.rose,
-                        mockContent: affordMockContent
-                    )
+                    combinedFeaturesPage
                 default:
                     setupContent
                 }
@@ -97,7 +68,7 @@ struct OnboardingView: View {
                 removal: .move(edge: isGoingForward ? .leading : .trailing)
             ))
 
-            // Progress dots (all 10 pages)
+            // Progress dots (8 pages)
             HStack(spacing: 6) {
                 ForEach(0..<totalPages, id: \.self) { i in
                     Capsule()
@@ -121,7 +92,7 @@ struct OnboardingView: View {
                         Label("Back", systemImage: "chevron.left")
                             .font(.subheadline.weight(.semibold))
                     }
-                    .buttonStyle(OnboardingButtonStyle(accent: Color(red: 11/255, green: 68/255, blue: 50/255), isFilled: false))
+                    .buttonStyle(OnboardingButtonStyle(accent: Colors.mint, isFilled: false))
                     .frame(width: 100)
                 }
 
@@ -129,7 +100,7 @@ struct OnboardingView: View {
                     Text(buttonTitle)
                         .font(.headline.weight(.semibold))
                 }
-                .buttonStyle(OnboardingButtonStyle(accent: Color(red: 11/255, green: 68/255, blue: 50/255)))
+                .buttonStyle(OnboardingButtonStyle(accent: Colors.mint))
                 .disabled(isSetupPhase && !isWizardStepComplete(profile: draftProfile, step: setupStep))
                 .opacity(isSetupPhase && !isWizardStepComplete(profile: draftProfile, step: setupStep) ? 0.6 : 1)
             }
@@ -149,14 +120,10 @@ struct OnboardingView: View {
     }
 
     private var accentColor: Color {
-        if isSetupPhase {
-            return Colors.mint
-        }
+        if isSetupPhase { return Colors.mint }
         switch page {
         case 0: return Colors.pistachio
         case 1: return Colors.mint
-        case 2: return Colors.periwinkle
-        case 3: return Colors.rose
         default: return Colors.mint
         }
     }
@@ -181,8 +148,9 @@ struct OnboardingView: View {
 
     // MARK: - Welcome
     private var welcomePage: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 24) {
             Spacer()
+                .frame(maxHeight: 40)
             Image("CampusCentsIcon")
                 .resizable()
                 .scaledToFit()
@@ -190,16 +158,24 @@ struct OnboardingView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .shadow(color: .black.opacity(colorScheme == .dark ? 0.4 : 0.12), radius: 24, y: 8)
 
-            VStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Welcome to CampusCents")
-                    .font(.title2.bold())
+                    .font(.largeTitle.bold())
                     .foregroundStyle(primaryLabel)
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
                 Text("Your intelligent budgeting companion for student life.")
-                    .font(.subheadline)
+                    .font(.title3)
                     .foregroundStyle(secondaryLabel)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(2)
+                    .frame(maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: 8) {
+                    bulletRow("Quick setup — we'll guide you step by step")
+                    bulletRow("Track spending and see where your money goes")
+                    bulletRow("AI-powered insights tailored to your budget")
+                    bulletRow("Know what you can afford before you buy")
+                }
+                .padding(.top, 4)
             }
             .padding(.horizontal, 28)
             Spacer()
@@ -207,122 +183,124 @@ struct OnboardingView: View {
         .padding(.vertical, 24)
     }
 
-    // MARK: - Feature preview template (matches setup pages 5–10: more header room, middle vertical)
-    private func featurePage(icon: String, title: String, subtitle: String, accent: Color, mockContent: () -> some View) -> some View {
+    private func bulletRow(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.subheadline)
+                .foregroundStyle(Colors.pistachio)
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(secondaryLabel)
+        }
+    }
+
+    // MARK: - Combined features (one page: track + AI + afford)
+    private var combinedFeaturesPage: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                Image(systemName: icon)
-                    .font(.system(size: 48, weight: .medium))
-                    .foregroundStyle(accent)
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Everything you need to stay on budget")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(primaryLabel)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 24)
+                    .padding(.bottom, 8)
 
-                VStack(spacing: 8) {
-                    Text(title)
-                        .font(.title3.bold())
-                        .foregroundStyle(primaryLabel)
-                        .multilineTextAlignment(.center)
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(secondaryLabel)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(2)
-                }
-
-                mockContent()
+                featureCard(
+                    icon: "chart.pie.fill",
+                    title: "Track your money",
+                    subtitle: "See exactly where your cash goes with clear budgets and daily insights.",
+                    accent: Colors.mint,
+                    content: trackMockContent
+                )
+                featureCard(
+                    icon: "sparkles.rectangle.stack",
+                    title: "AI Budget Insights",
+                    subtitle: "Get personalized insights and tips powered by on-device AI.",
+                    accent: Colors.periwinkle,
+                    content: snapshotMockContent
+                )
+                featureCard(
+                    icon: "questionmark.circle.fill",
+                    title: "Can I afford it?",
+                    subtitle: "Before you buy, see how it affects your budget in real time.",
+                    accent: Colors.rose,
+                    content: affordMockContent
+                )
+                featureCard(
+                    icon: "chart.line.uptrend.xyaxis",
+                    title: "Stay on track",
+                    subtitle: "Set goals, monitor progress, and get gentle nudges when you're over budget.",
+                    accent: Colors.blueMint,
+                    content: stayOnTrackMockContent
+                )
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 24)
-            .padding(.top, 56)
+            .padding(.bottom, 32)
         }
         .scrollIndicators(.hidden)
     }
 
+    private func featureCard<Content: View>(icon: String, title: String, subtitle: String, accent: Color, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(primaryLabel)
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(secondaryLabel)
+                }
+                Spacer(minLength: 0)
+            }
+            content()
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1))
+    }
+
     private func trackMockContent() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
                 mockMetricCell(label: "12 days left", value: "~$45/day", tint: Colors.mint)
                 mockMetricCell(label: "Remaining", value: "$540", tint: Colors.mint)
             }
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: 10) {
                 mockMetricCell(label: "Income", value: "$700", tint: Colors.sky)
                 mockMetricCell(label: "Spent", value: "$460", tint: Colors.rose)
             }
         }
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Colors.sky.opacity(0.4), lineWidth: 1)
-        )
     }
 
     private func snapshotMockContent() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Existing AI snapshot card
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Label("AI Snapshot", systemImage: "sparkles.rectangle.stack")
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(
-                            LinearGradient(colors: [Colors.periwinkle, Colors.rose], startPoint: .leading, endPoint: .trailing)
-                        )
-                }
-                Text("Your budget is in good shape. Room for occasional treats without stress.")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(primaryLabel)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Colors.periwinkle.opacity(0.4), lineWidth: 1)
-            )
-
-            // New AI insights card
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Label("AI Insights", systemImage: "brain.head.profile")
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(
-                            LinearGradient(colors: [Colors.sky, Colors.pistachio], startPoint: .leading, endPoint: .trailing)
-                        )
-                }
-                Text("We’ll surface patterns in your spending and suggest small tweaks to stretch your budget further.")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(primaryLabel)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Colors.sky.opacity(0.4), lineWidth: 1)
-            )
-        }
-    }
-
-    private func affordMockContent() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "questionmark.circle.fill")
-                    .foregroundStyle(Colors.rose)
-                Text("Can I afford this?")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(primaryLabel)
-            }
-            Text("Type any purchase to see how it affects your budget before you buy.")
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Your budget is in good shape. Room for occasional treats without stress.")
                 .font(.subheadline)
+                .foregroundStyle(primaryLabel)
+            Text("We'll surface patterns and suggest small tweaks to stretch your budget.")
+                .font(.caption)
                 .foregroundStyle(secondaryLabel)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Colors.rose.opacity(0.4), lineWidth: 1)
-        )
+    }
+
+    private func affordMockContent() -> some View {
+        Text("Type any purchase to see how it affects your budget before you buy.")
+            .font(.subheadline)
+            .foregroundStyle(secondaryLabel)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func stayOnTrackMockContent() -> some View {
+        Text("Savings goals, spending alerts, and a clear view of how you're doing each month.")
+            .font(.subheadline)
+            .foregroundStyle(secondaryLabel)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func mockMetricCell(label: String, value: String, tint: Color) -> some View {
@@ -372,7 +350,7 @@ struct OnboardingButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - Setup steps (6 steps, pages 4–9)
+// MARK: - Setup steps (6 steps, pages 2–7)
 enum SetupStep: Int, CaseIterable {
     case profile, income, housing, food, expenses, goals
 }
@@ -405,11 +383,13 @@ struct OnboardingSetupView: View {
     @State private var termYear: Int = Calendar.current.component(.year, from: Date())
 
     private var primaryLabel: Color { colorScheme == .dark ? .white : .primary }
-    private var secondaryLabel: Color { colorScheme == .dark ? .white.opacity(0.8) : .secondary }
+    private var secondaryLabel: Color { colorScheme == .dark ? .white.opacity(0.84) : Color.primary.opacity(0.68) }
+    private var tertiaryLabel: Color { colorScheme == .dark ? .white.opacity(0.72) : Color.primary.opacity(0.58) }
     private var inputBg: Color {
-        colorScheme == .dark ? Color(white: 0.22) : .white
+        colorScheme == .dark ? Color.white.opacity(0.12) : Color.white.opacity(0.9)
     }
     private var inputText: Color { colorScheme == .dark ? .white : .primary }
+    private var inputStroke: Color { Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.08) }
 
     private let gridSpacing: CGFloat = 16
     private let sectionSpacing: CGFloat = 24
@@ -427,6 +407,10 @@ struct OnboardingSetupView: View {
                 case .goals: goalsStep
                 }
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1))
             .padding(horizontalPadding)
             .padding(.vertical, 24)
         }
@@ -482,17 +466,17 @@ struct OnboardingSetupView: View {
                 .frame(maxWidth: .infinity)
 
             formField(label: "Name", hint: "Your full name") {
-                LabeledField("", value: $profile.name, placeholder: "Your full name", labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledField("", value: $profile.name, placeholder: "Your full name", labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "School", hint: "University or college") {
-                LabeledField("", value: $profile.school, placeholder: "University or college", labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledField("", value: $profile.school, placeholder: "University or college", labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Expected graduation", hint: "When do you plan to finish?") {
+            formField(label: "Expected graduation", hint: "Spring, Summer, or Fall graduation") {
                 HStack(spacing: 12) {
                     Picker("Term", selection: $termSeason) {
                         Text("Spring").tag("Spring")
-                        Text("Fall").tag("Fall")
                         Text("Summer").tag("Summer")
+                        Text("Fall").tag("Fall")
                     }
                     .pickerStyle(.menu)
                     .tint(inputText)
@@ -502,8 +486,9 @@ struct OnboardingSetupView: View {
                     .pickerStyle(.menu)
                     .tint(inputText)
                 }
-                .padding(12)
-                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(inputBg))
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(inputBg))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(inputStroke, lineWidth: 1))
             }
         }
     }
@@ -512,13 +497,13 @@ struct OnboardingSetupView: View {
         VStack(alignment: .leading, spacing: gridSpacing) {
             sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Per month unless noted", accent: Colors.mint)
             formField(label: "Monthly income", hint: "Jobs, side gigs, allowance") {
-                LabeledNumberField("", value: $profile.monthlyIncome, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.monthlyIncome, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Tuition per term", hint: "Total for fall or spring") {
-                LabeledNumberField("", value: $profile.tuition, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.tuition, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Scholarships & aid", hint: "Financial aid per term") {
-                LabeledNumberField("", value: $profile.scholarshipsAid, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.scholarshipsAid, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
     }
@@ -526,19 +511,20 @@ struct OnboardingSetupView: View {
     private var housingStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
             sectionHeader(icon: "house.fill", title: "Where you live", subtitle: "Monthly housing costs", accent: Colors.peach)
-            formField(label: "Housing type", hint: "Dorm or apartment") {
+            formField(label: "Housing type", hint: "Dorm, apartment, or living at home") {
                 Picker("Housing type", selection: $profile.housingType) {
                     Text("On-Campus").tag(BudgetInput.HousingType.onCampus)
                     Text("Off-Campus").tag(BudgetInput.HousingType.offCampus)
+                    Text("Commuter").tag(BudgetInput.HousingType.commuter)
                 }
                 .pickerStyle(.segmented)
                 .tint(Colors.peach)
             }
             formField(label: "Rent", hint: "Monthly rent or room & board") {
-                LabeledNumberField("", value: $profile.rent, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.rent, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Utilities", hint: "Electric, water, internet") {
-                LabeledNumberField("", value: $profile.utilities, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.utilities, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
     }
@@ -547,10 +533,10 @@ struct OnboardingSetupView: View {
         VStack(alignment: .leading, spacing: gridSpacing) {
             sectionHeader(icon: "fork.knife", title: "Food", subtitle: "Monthly budget for eating", accent: Colors.sun)
             formField(label: "Meal plan", hint: "Campus dining — 0 if none") {
-                LabeledNumberField("", value: $profile.mealPlan, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.mealPlan, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Groceries", hint: "Stores, restaurants, delivery") {
-                LabeledNumberField("", value: $profile.groceries, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.groceries, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
     }
@@ -559,13 +545,13 @@ struct OnboardingSetupView: View {
         VStack(alignment: .leading, spacing: gridSpacing) {
             sectionHeader(icon: "creditcard.fill", title: "Other monthly spending", subtitle: "Transport, subscriptions, personal", accent: Colors.lavender)
             formField(label: "Transportation", hint: "Gas, transit, rideshare") {
-                LabeledNumberField("", value: $profile.transportation, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.transportation, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Subscriptions", hint: "Netflix, Spotify, gym") {
-                LabeledNumberField("", value: $profile.subscriptions, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.subscriptions, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Personal & entertainment", hint: "Clothing, hobbies, going out") {
-                LabeledNumberField("", value: $profile.personal, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.personal, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }
     }
@@ -574,10 +560,10 @@ struct OnboardingSetupView: View {
         VStack(alignment: .leading, spacing: gridSpacing) {
             sectionHeader(icon: "target", title: "Goals & planning style", subtitle: "Savings and how you budget", accent: Colors.pistachio)
             formField(label: "Monthly savings goal", hint: "Amount to put away each month") {
-                LabeledNumberField("", value: $profile.savingsGoal, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.savingsGoal, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Monthly investments", hint: "Stocks, crypto — 0 if none") {
-                LabeledNumberField("", value: $profile.investments, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg)
+                LabeledNumberField("", value: $profile.investments, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Planning style", hint: "How you track your budget") {
                 Picker("Planning style", selection: $profile.budgetStyle) {

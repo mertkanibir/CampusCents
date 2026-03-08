@@ -9,9 +9,11 @@ struct LabeledNumberField: View {
     var labelColor: Color = .secondary
     var textColor: Color = .primary
     var backgroundColor: Color? = nil
+    var cornerRadius: CGFloat = 8
+    var strokeColor: Color? = nil
     @State private var text: String = ""
 
-    init(_ title: String, value: Binding<Double>, hint: String? = nil, isCurrency: Bool = false, placeholder: String = "0", labelColor: Color = .secondary, textColor: Color = .primary, backgroundColor: Color? = nil) {
+    init(_ title: String, value: Binding<Double>, hint: String? = nil, isCurrency: Bool = false, placeholder: String = "0", labelColor: Color = .secondary, textColor: Color = .primary, backgroundColor: Color? = nil, cornerRadius: CGFloat = 8, strokeColor: Color? = nil) {
         self.title = title
         self._value = value
         self.hint = hint
@@ -20,6 +22,8 @@ struct LabeledNumberField: View {
         self.labelColor = labelColor
         self.textColor = textColor
         self.backgroundColor = backgroundColor
+        self.cornerRadius = cornerRadius
+        self.strokeColor = strokeColor
         let v = value.wrappedValue
         self._text = State(initialValue: v == 0 ? "" : String(format: "%.0f", v))
     }
@@ -60,8 +64,15 @@ struct LabeledNumberField: View {
                         .textFieldStyle(.plain)
                         .foregroundStyle(effectiveTextColor)
                 }
-                .padding(8)
-                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(backgroundColor!))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .background(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous).fill(backgroundColor!))
+                .overlay {
+                    if let strokeColor {
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .stroke(strokeColor, lineWidth: 1)
+                    }
+                }
                 .onChange(of: text) { _, newValue in
                     let cleaned = Self.numericOnly(newValue)
                     if cleaned != newValue { text = cleaned }

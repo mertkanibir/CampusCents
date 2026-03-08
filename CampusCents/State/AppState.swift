@@ -59,6 +59,21 @@ final class AppState: ObservableObject {
         return min(100, max(0, score))
     }
 
+    /// Colors from recent activity (transaction categories) for the dynamic header gradient.
+    var activityGradientColors: [Color] {
+        let recent = transactions.sorted { $0.date > $1.date }.prefix(12)
+        var seen: Set<BudgetCategory.Kind> = []
+        var colors: [Color] = []
+        for t in recent {
+            guard !seen.contains(t.category) else { continue }
+            seen.insert(t.category)
+            colors.append(t.category.tint)
+        }
+        if colors.count >= 2 { return Array(colors) }
+        if colors.count == 1 { return [colors[0], colors[0].opacity(0.6)] }
+        return categories.prefix(4).map(\.color.color)
+    }
+
     var insights: [Insight] {
         var items: [Insight] = []
 
@@ -183,6 +198,16 @@ final class AppState: ObservableObject {
         profile = .sample
         categories = BudgetCategory.sample
         transactions = Transaction.sample
+        templates = TransactionTemplate.defaults
+        recurring = []
+    }
+
+    /// Clears all data and returns the app to onboarding (e.g. “Delete account”).
+    func deleteAccount() {
+        hasCompletedOnboarding = false
+        profile = .emptyForOnboarding
+        categories = []
+        transactions = []
         templates = TransactionTemplate.defaults
         recurring = []
     }

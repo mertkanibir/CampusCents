@@ -94,4 +94,19 @@ enum Prompts: Sendable {
         - Avoid definitive advice language.
         """
     }
+
+    /// Short, focused instruction so the model only does extraction (no budgeting advice).
+    nonisolated static let transactionParseInstruction = """
+    You only extract one expense from the user's message. Output exactly: transactionTitle (Title Case, no numbers or currency), amount (number), categoryKey (one of the allowed keys), dateDescription ("today", "yesterday", or YYYY-MM-DD). No other text.
+    """
+
+    nonisolated static func transactionParsePrompt(userText: String, categoryKeys: [String]) -> String {
+        let list = categoryKeys.joined(separator: ", ")
+        return """
+        User said: "\(userText)"
+
+        Extract one expense. Allowed categoryKey values: \(list).
+        Rules: transactionTitle = merchant/expense name in Title Case only (e.g. "10 dollars for uber eats" -> "Uber Eats"). amount = the number. dateDescription = "today" or "yesterday" or YYYY-MM-DD. For Uber Eats/DoorDash/delivery use mealPlan. For Uber/Lyft/gas use transportation. For coffee/snacks use personal. For groceries use groceries.
+        """
+    }
 }

@@ -73,7 +73,7 @@ struct InsightsView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Insights Lab")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .task(id: key) {
                 await refreshAI()
@@ -129,17 +129,6 @@ struct InsightsView: View {
                 .offset(x: -30, y: 110)
 
             VStack(alignment: .leading, spacing: 16) {
-                Label("AI Spending Intelligence", systemImage: "sparkles.rectangle.stack")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(primaryText)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(colorScheme == .dark ? Color.white.opacity(0.12) : Colors.periwinkle.opacity(0.12), in: Capsule())
-                    .overlay {
-                        Capsule()
-                            .stroke(colorScheme == .dark ? Color.white.opacity(0.10) : Colors.periwinkle.opacity(0.16), lineWidth: 1)
-                    }
-
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Understand where your budget is under pressure.")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -393,7 +382,7 @@ struct InsightsView: View {
     }
 
     private func pointTint(for index: Int) -> Color {
-        [Colors.periwinkle, Colors.blueMint, Colors.mint][index % 3]
+        Colors.periwinkle
     }
 
     private func toggleExpansion(for id: String) {

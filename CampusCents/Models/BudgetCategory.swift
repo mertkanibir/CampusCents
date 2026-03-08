@@ -147,7 +147,43 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             default: return false
             }
         }
-        
+
+        /// Stable key for AI/parsing (e.g. "personal", "groceries"). Used when parsing natural-language transactions.
+        var kindKey: String {
+            switch self {
+            case .income: return "income"
+            case .investment: return "investment"
+            case .tuition: return "tuition"
+            case .aid: return "aid"
+            case .rent: return "rent"
+            case .utilities: return "utilities"
+            case .mealPlan: return "mealPlan"
+            case .groceries: return "groceries"
+            case .transportation: return "transportation"
+            case .subscriptions: return "subscriptions"
+            case .personal: return "personal"
+            case .custom(let id, _, _, _, _, _): return id
+            }
+        }
+
+        /// Parses a category key (e.g. from AI) into a Kind. Returns nil for unknown or custom keys.
+        static func kind(forKey key: String) -> BudgetCategory.Kind? {
+            switch key.lowercased() {
+            case "income": return .income
+            case "investment": return .investment
+            case "tuition": return .tuition
+            case "aid": return .aid
+            case "rent": return .rent
+            case "utilities": return .utilities
+            case "mealplan": return .mealPlan
+            case "groceries": return .groceries
+            case "transportation": return .transportation
+            case "subscriptions": return .subscriptions
+            case "personal": return .personal
+            default: return nil
+            }
+        }
+
         var desc: String? {
             if case .custom(_, _, let description, _, _, _) = self { return description }
             return nil

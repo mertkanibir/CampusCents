@@ -84,6 +84,46 @@ struct ScenarioInput: Sendable, Equatable {
     var scenarioB: BudgetInput
 }
 
+/// Result of parsing natural-language transaction text (e.g. "10 dollars for uber eats" → Uber Eats $10 today).
+struct ParsedTransactionInput: Sendable, Equatable {
+    var transactionTitle: String
+    var amount: Double
+    /// Category key matching BudgetCategory.Kind (e.g. "personal", "groceries", "transportation").
+    var categoryKey: String
+    /// "today", "yesterday", or ISO date "YYYY-MM-DD". Empty means today.
+    var dateDescription: String
+
+    /// Resolves dateDescription to a concrete Date. Uses the given calendar and reference date (e.g. now).
+    func resolvedDate(calendar: Calendar = .current, reference: Date = Date()) -> Date {
+        let normalized = dateDescription.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.isEmpty || normalized == "today" {
+            return calendar.startOfDay(for: reference)
+        }
+        if normalized == "yesterday" {
+            return calendar.date(byAdding: .day, value: -1, to: reference).map { calendar.startOfDay(for: $0) } ?? reference
+        }
+        // YYYY-MM-DD
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = calendar.timeZone
+        if let parsed = formatter.date(from: normalized) {
+            return calendar.startOfDay(for: parsed)
+        }
+        return calendar.startOfDay(for: reference)
+    }
+
+    /// Human-readable date label for display (e.g. "Today", "Yesterday", "Mar 8, 2025").
+    func dateLabel(calendar: Calendar = .current, reference: Date = Date()) -> String {
+        let d = resolvedDate(calendar: calendar, reference: reference)
+        if calendar.isDateInToday(d) { return "Today" }
+        if calendar.isDateInYesterday(d) { return "Yesterday" }
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeZone = calendar.timeZone
+        return formatter.string(from: d)
+    }
+}
+
 enum Flexibility: String, Sendable, Codable, CaseIterable {
     case tight
     case moderate

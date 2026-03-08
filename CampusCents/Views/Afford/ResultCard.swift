@@ -29,13 +29,6 @@ struct ResultCard: View {
         return VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Label("AI Affordability Verdict", systemImage: "sparkles")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(colorScheme == .dark ? primaryText : ui.accent)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(ui.accent.opacity(colorScheme == .dark ? 0.3 : 0.12), in: Capsule())
-
                     Text(ui.title)
                         .font(.system(size: 30, weight: .bold, design: .rounded))
                         .foregroundStyle(primaryText)

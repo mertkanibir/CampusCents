@@ -145,6 +145,111 @@ struct FallbackEngine: Sendable {
         )
     }
 
+    /// Rule-based parse when Foundation Models are unavailable. Extracts amount, cleans title (e.g. "10 dollars for uber eats" -> "Uber Eats" $10), and date.
+    nonisolated func parseTransactionFallback(_ userText: String) -> ParsedTransactionInput? {
+        let trimmed = userText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        var amount: Double = 0
+        var title = trimmed
+        var dateDescription = "today"
+        let lower = trimmed.lowercased()
+        if lower.contains("yesterday") { dateDescription = "yesterday" }
+
+        // 1) Extract amount: match number with optional $ / "dollars" / "for" / "on"
+        let amountPattern = #"(?:^\$?\s*|\s+)(\d+(?:[.,]\d+)?)\s*(?:\$|dollars?|for|on|at|$)"#
+        if let regex = try? NSRegularExpression(pattern: amountPattern, options: .caseInsensitive),
+           let match = regex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
+           let range = Range(match.range(at: 1), in: trimmed) {
+            let numStr = String(trimmed[range]).replacingOccurrences(of: ",", with: ".")
+            amount = Double(numStr) ?? 0
+            title = (trimmed as NSString).replacingCharacters(in: match.range, with: " ")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        if amount == 0 {
+            let simplePattern = #"\$?\s*(\d+(?:[.,]\d+)?)\s*\$?"#
+            if let regex = try? NSRegularExpression(pattern: simplePattern),
+               let match = regex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
+               let range = Range(match.range(at: 1), in: trimmed) {
+                let numStr = String(trimmed[range]).replacingOccurrences(of: ",", with: ".")
+                amount = Double(numStr) ?? 0
+                title = (trimmed as NSString).replacingCharacters(in: match.range, with: " ")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        if amount == 0 {
+            let digitOnly = #"(\d+(?:[.,]\d+)?)"#
+            if let regex = try? NSRegularExpression(pattern: digitOnly),
+               let match = regex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
+               let range = Range(match.range(at: 1), in: trimmed) {
+                let numStr = String(trimmed[range]).replacingOccurrences(of: ",", with: ".")
+                amount = Double(numStr) ?? 0
+                title = (trimmed as NSString).replacingCharacters(in: match.range, with: " ")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+
+        // 2) Clean title: drop amount-related and filler words, then Title Case
+        let stopWords = [" for ", " on ", " at ", " dollars", " dollar", " spent", " paid", " cost", " - ", " – "]
+        var cleaned = title
+        for w in stopWords {
+            cleaned = cleaned.replacingOccurrences(of: w, with: " ", options: .caseInsensitive)
+        }
+        cleaned = cleaned
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        if !cleaned.isEmpty {
+            title = cleaned
+                .components(separatedBy: " ")
+                .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+                .joined(separator: " ")
+        }
+        if title.isEmpty { title = "Expense" }
+
+        // 3) Infer category from keywords (e.g. "uber eats" -> mealPlan)
+        let categoryKey = Self.inferCategoryKey(title: title, originalInput: lower)
+
+        return ParsedTransactionInput(
+            transactionTitle: title,
+            amount: max(0, amount),
+            categoryKey: categoryKey,
+            dateDescription: dateDescription
+        )
+    }
+
+    private static nonisolated func inferCategoryKey(title: String, originalInput: String) -> String {
+        let t = title.lowercased()
+        let o = originalInput
+        if t.contains("uber eats") || t.contains("ubereats") || t.contains("doordash") || t.contains("door dash")
+            || t.contains("grubhub") || t.contains("delivery") || t.contains("takeout") || t.contains("take out")
+            || o.contains("uber eats") || o.contains("doordash") || o.contains("delivery") || o.contains("takeout") {
+            return "mealPlan"
+        }
+        if t.contains("uber") || t.contains("lyft") || t.contains("gas") || t.contains("parking")
+            || t.contains("transit") || t.contains("bus") || t.contains("train") {
+            return "transportation"
+        }
+        if t.contains("grocer") || t.contains("trader joe") || t.contains("aldi") || t.contains("walmart")
+            || t.contains("costco") || t.contains("food") || t.contains("supermarket") {
+            return "groceries"
+        }
+        if t.contains("coffee") || t.contains("starbucks") || t.contains("dunkin") || t.contains("cafe")
+            || t.contains("snack") || t.contains("bubble tea") {
+            return "personal"
+        }
+        if t.contains("netflix") || t.contains("spotify") || t.contains("streaming") || t.contains("subscription")
+            || t.contains("hulu") || t.contains("disney") || t.contains("apple music") {
+            return "subscriptions"
+        }
+        if t.contains("rent") || t.contains("housing") || t.contains("lease") { return "rent" }
+        if t.contains("electric") || t.contains("water") || t.contains("phone bill") || t.contains("utility")
+            || t.contains("wifi") || t.contains("internet") { return "utilities" }
+        if t.contains("textbook") || t.contains("tuition") || t.contains("school") { return "tuition" }
+        return "personal"
+    }
+
     nonisolated func spendingPressureInsights(for input: BudgetInput) -> [String] {
         var result: [String] = []
         let rent = input.getExpense(named: "Rent")

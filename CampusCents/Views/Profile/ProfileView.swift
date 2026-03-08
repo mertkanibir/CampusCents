@@ -37,6 +37,12 @@ struct ProfileView: View {
                     }
                 }
 
+                Section("Activity") {
+                    NavigationLink(destination: TransactionHistoryView()) {
+                        Label("Past Activity", systemImage: "clock.arrow.circlepath")
+                    }
+                }
+
                 Section("App") {
                     Button("Save Changes") {
                         state.profile = draftProfile

@@ -6,6 +6,8 @@ struct AffordabilityView: View {
     @State private var itemName = "Coffee with friends"
     @State private var priceText = "12"
     @State private var showScenarioSheet = false
+    private let primaryCardCornerRadius: CGFloat = 26
+    private let secondaryCardCornerRadius: CGFloat = 24
 
     var body: some View {
         NavigationStack {
@@ -78,9 +80,9 @@ struct AffordabilityView: View {
                     }
                     .padding(18)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(surfaceBackground)
+                    .background(surfaceBackground, in: RoundedRectangle(cornerRadius: primaryCardCornerRadius, style: .continuous))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        RoundedRectangle(cornerRadius: primaryCardCornerRadius, style: .continuous)
                             .stroke(surfaceStroke, lineWidth: 1)
                     }
                     .shadow(color: .black.opacity(colorScheme == .dark ? 0.18 : 0.08), radius: 18, y: 10)
@@ -223,7 +225,7 @@ struct AffordabilityView: View {
                 contextRow(title: "Housing mode", value: state.profile.housingType.displayName)
             }
 
-            Rectangle()
+            Capsule(style: .continuous)
                 .fill(Color.primary.opacity(colorScheme == .dark ? 0.1 : 0.06))
                 .frame(height: 1)
 
@@ -243,9 +245,9 @@ struct AffordabilityView: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(surfaceBackground)
+        .background(surfaceBackground, in: RoundedRectangle(cornerRadius: secondaryCardCornerRadius, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: secondaryCardCornerRadius, style: .continuous)
                 .stroke(surfaceStroke, lineWidth: 1)
         }
     }

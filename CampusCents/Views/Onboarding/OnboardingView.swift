@@ -8,42 +8,64 @@ struct OnboardingView: View {
     private static let onboardingBackground = Color(red: 0, green: 90/255, blue: 67/255) // #005A43
 
     var body: some View {
-        VStack(spacing: 20) {
-            TabView(selection: $page) {
-                OnboardingPage(
-                    title: "Welcome to CampusCents",
-                    subtitle: "An intelligent budgeting app for college students.",
-                    tint: Colors.pistachio,
-                    customImage: "CampusCentsIcon"
-                )
-                .tag(0)
-
-                OnboardingPage(
-                    title: "Track, plan, and know",
-                    subtitle: "Track spending, plan your budget, and get real-time insights",
-                    icon: "sparkles",
-                    tint: Colors.pistachio
-                )
-                .tag(1)
-
-                ProfileQuickSetupView(profile: $draftProfile)
-                    .tag(2)
-            }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-
-            Button(page < 2 ? "Continue" : "Get Started") {
-                if page < 2 {
-                    page += 1
-                } else {
-                    state.completeOnboarding(with: draftProfile)
+        VStack(spacing: 0) {
+            // Page content (conditional to prevent swipe-back)
+            Group {
+                switch page {
+                case 0:
+                    OnboardingPage(
+                        title: "Welcome to CampusCents",
+                        subtitle: "An intelligent budgeting app for college students.",
+                        tint: Colors.pistachio,
+                        customImage: "CampusCentsIcon"
+                    )
+                case 1:
+                    OnboardingPage(
+                        title: "Track, plan, and know",
+                        subtitle: "Track spending, plan your budget, and get real-time insights",
+                        icon: "sparkles",
+                        tint: Colors.pistachio
+                    )
+                default:
+                    ProfileQuickSetupView(profile: $draftProfile) {
+                        state.completeOnboarding(with: draftProfile)
+                    }
                 }
             }
-            .buttonStyle(OnboardingButtonStyle())
-            .padding(.horizontal)
+            .id(page)
+            .transition(.asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            ))
+
+            // 3-dot page indicator (intro pages only)
+            if page < 2 {
+                HStack(spacing: 8) {
+                    ForEach(0..<3, id: \.self) { index in
+                        Circle()
+                            .fill(index == page ? Color.white : Color.white.opacity(0.4))
+                            .frame(width: 8, height: 8)
+                    }
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+            }
+
+            if page < 2 {
+                Button("Continue") {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        page += 1
+                    }
+                }
+                .buttonStyle(OnboardingButtonStyle())
+                .padding(.horizontal, 24)
+                .padding(.bottom, 12)
+            }
         }
-        .padding(.vertical, 30)
+        .padding(.top, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Self.onboardingBackground)
+        .animation(.easeInOut(duration: 0.3), value: page)
     }
 }
 
@@ -70,74 +92,238 @@ struct OnboardingPage: View {
     var customImage: String? = nil
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 28) {
             Spacer()
             Group {
                 if let name = customImage {
                     Image(name)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 240, height: 240)
+                        .frame(width: 200, height: 200)
                         .clipped()
                 } else if let sfIcon = icon {
                     Image(systemName: sfIcon)
-                        .font(.system(size: 58, weight: .bold))
+                        .font(.system(size: 56, weight: .semibold))
                         .foregroundStyle(.white)
                 } else {
                     EmptyView()
                 }
             }
-            .padding(26)
-            .background(customImage != nil ? Color.clear : tint, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .shadow(color: .black.opacity(0.12), radius: 12, y: 8)
-            Text(title)
-                .font(.largeTitle.bold())
-                .foregroundStyle(.white)
-                .multilineTextAlignment(.center)
-            Text(subtitle)
-                .font(.callout)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.85))
-                .padding(.horizontal)
+            .padding(28)
+            .background(customImage != nil ? Color.clear : tint, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: .black.opacity(0.15), radius: 16, y: 6)
+
+            VStack(spacing: 10) {
+                Text(title)
+                    .font(.title.bold())
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.88))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+            }
+            .padding(.horizontal, 32)
             Spacer()
         }
-        .padding()
+        .padding(.vertical, 24)
     }
+}
+
+enum SetupStep: Int, CaseIterable {
+    case profile, income, housing, food, expenses, goals
 }
 
 struct ProfileQuickSetupView: View {
     @Binding var profile: StudentProfile
+    var onComplete: (() -> Void)? = nil
+
+    @State private var currentStep: SetupStep = .profile
+    @State private var termSeason: String = "Spring"
+    @State private var termYear: Int = Calendar.current.component(.year, from: Date())
+
+    private static let green = Color(red: 0, green: 90/255, blue: 67/255) // #005A43
+    private static let textBoxGreen = Color(red: 11/255, green: 68/255, blue: 50/255) // #0B4432
+
+    private var stepContentPadding: EdgeInsets {
+        EdgeInsets(top: 20, leading: 24, bottom: 24, trailing: 24)
+    }
+
+    private var isCurrentStepComplete: Bool {
+        switch currentStep {
+        case .profile:
+            return !profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && !profile.school.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .income:
+            return profile.monthlyIncome > 0
+        case .housing:
+            return profile.rent >= 0 && profile.utilities >= 0
+        case .food:
+            return profile.mealPlan >= 0 && profile.groceries >= 0
+        case .expenses:
+            return profile.transportation >= 0 && profile.subscriptions >= 0 && profile.personal >= 0
+        case .goals:
+            return profile.savingsGoal >= 0 && profile.investments >= 0
+        }
+    }
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.headline)
+            .font(.headline.weight(.semibold))
             .foregroundStyle(.white)
-            .padding(.top, 8)
+    }
+
+    private var yearRange: [Int] {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        return Array((currentYear - 2)...(currentYear + 6))
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                AvatarPickerView(profile: $profile)
-                    .foregroundStyle(.white)
+        VStack(spacing: 0) {
+            ScrollView {
+                Group {
+                    switch currentStep {
+                    case .profile: profileStepContent
+                    case .income: incomeStepContent
+                    case .housing: housingStepContent
+                    case .food: foodStepContent
+                    case .expenses: expensesStepContent
+                    case .goals: goalsStepContent
+                    }
+                }
+                .id(currentStep)
+            }
+            .scrollContentBackground(.hidden)
+            .environment(\.colorScheme, .light)
 
-                sectionHeader("Profile")
-                VStack(spacing: 10) {
-                    LabeledField("Name", value: $profile.name, labelColor: .white)
-                    LabeledField("School", value: $profile.school, labelColor: .white)
-                    LabeledField("Term", value: $profile.term, labelColor: .white)
+            // Progress indicator (above button)
+            HStack(spacing: 8) {
+                ForEach(SetupStep.allCases, id: \.rawValue) { step in
+                    Capsule()
+                        .fill(step.rawValue <= currentStep.rawValue ? Color.white : Color.white.opacity(0.3))
+                        .frame(height: 3)
+                        .animation(.smooth(duration: 0.25), value: currentStep)
+                }
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+
+            // Bottom navigation
+            HStack(spacing: 12) {
+                if currentStep != .profile {
+                    Button {
+                        if let prev = SetupStep(rawValue: currentStep.rawValue - 1) {
+                            withAnimation(.smooth(duration: 0.25)) { currentStep = prev }
+                        }
+                    } label: {
+                        Label("Back", systemImage: "chevron.left")
+                    }
+                    .buttonStyle(OnboardingButtonStyle())
+                    .frame(width: 100)
                 }
 
-                sectionHeader("Income")
-                VStack(spacing: 10) {
-                    LabeledNumberField("Income", value: $profile.monthlyIncome, labelColor: .white)
+                if currentStep == .goals {
+                    Button("Get Started") {
+                        onComplete?()
+                    }
+                    .buttonStyle(OnboardingButtonStyle())
+                } else {
+                    Button("Next") {
+                        if let next = SetupStep(rawValue: currentStep.rawValue + 1) {
+                            withAnimation(.smooth(duration: 0.25)) { currentStep = next }
+                        }
+                    }
+                    .buttonStyle(OnboardingButtonStyle())
+                    .disabled(!isCurrentStepComplete)
+                    .opacity(isCurrentStepComplete ? 1 : 0.6)
                 }
-                LabeledNumberField("Investments", value: $profile.investments, labelColor: .white)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 12)
+        }
+        .foregroundStyle(.white)
+        .tint(.white)
+        .onAppear {
+            let parts = profile.term.split(separator: " ")
+            if let first = parts.first {
+                termSeason = String(first)
+            }
+            if let last = parts.last, let y = Int(last) {
+                termYear = y
+            }
+        }
+        .onChange(of: termSeason) { _, _ in updateTerm() }
+        .onChange(of: termYear) { _, _ in updateTerm() }
+    }
 
-                sectionHeader("Housing")
-                VStack(spacing: 10) {
-                    LabeledNumberField("Rent", value: $profile.rent, labelColor: .white)
-                    LabeledNumberField("Utilities", value: $profile.utilities, labelColor: .white)
+    private func updateTerm() {
+        profile.term = "\(termSeason) \(termYear)"
+    }
+
+    private var profileStepContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            AvatarPickerView(profile: $profile)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+
+            sectionHeader("Profile")
+                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 16) {
+                LabeledField("Name", value: $profile.name, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledField("School", value: $profile.school, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Term")
+                        .font(.footnote)
+                        .foregroundStyle(.white)
+                    HStack(spacing: 12) {
+                        Picker("Season", selection: $termSeason) {
+                            Text("Spring").tag("Spring")
+                            Text("Fall").tag("Fall")
+                        }
+                        .pickerStyle(.menu)
+                        .tint(.white)
+                        Picker("Year", selection: $termYear) {
+                            ForEach(yearRange, id: \.self) { year in
+                                Text(String(year)).tag(year)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(.white)
+                    }
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Self.textBoxGreen))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(stepContentPadding)
+    }
+
+    private var incomeStepContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            sectionHeader("Income")
+                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 16) {
+                LabeledNumberField("Income", value: $profile.monthlyIncome, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(stepContentPadding)
+    }
+
+    private var housingStepContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            sectionHeader("Housing")
+                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 16) {
+                LabeledNumberField("Rent", value: $profile.rent, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Utilities", value: $profile.utilities, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Housing Type")
+                        .font(.footnote)
+                        .foregroundStyle(.white)
                     Picker("Housing Type", selection: $profile.housingType) {
                         ForEach(BudgetInput.HousingType.allCases, id: \.self) { type in
                             Text(type.displayName).tag(type)
@@ -145,23 +331,50 @@ struct ProfileQuickSetupView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(stepContentPadding)
+    }
 
-                sectionHeader("Food")
-                VStack(spacing: 10) {
-                    LabeledNumberField("Meal Plan", value: $profile.mealPlan, labelColor: .white)
-                    LabeledNumberField("Groceries", value: $profile.groceries, labelColor: .white)
-                }
+    private var foodStepContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            sectionHeader("Food")
+                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 16) {
+                LabeledNumberField("Meal Plan", value: $profile.mealPlan, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Groceries", value: $profile.groceries, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(stepContentPadding)
+    }
 
-                sectionHeader("Other Expenses")
-                VStack(spacing: 10) {
-                    LabeledNumberField("Transportation", value: $profile.transportation, labelColor: .white)
-                    LabeledNumberField("Subscriptions", value: $profile.subscriptions, labelColor: .white)
-                    LabeledNumberField("Personal", value: $profile.personal, labelColor: .white)
-                }
+    private var expensesStepContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            sectionHeader("Other Expenses")
+                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 16) {
+                LabeledNumberField("Transportation", value: $profile.transportation, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Subscriptions", value: $profile.subscriptions, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Personal", value: $profile.personal, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(stepContentPadding)
+    }
 
-                sectionHeader("Goals & Preferences")
-                VStack(spacing: 10) {
-                    LabeledNumberField("Savings Goal", value: $profile.savingsGoal, labelColor: .white)
+    private var goalsStepContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            sectionHeader("Goals & Preferences")
+                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 16) {
+                LabeledNumberField("Savings Goal", value: $profile.savingsGoal, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Investments", value: $profile.investments, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Budget Style")
+                        .font(.footnote)
+                        .foregroundStyle(.white)
                     Picker("Budget Style", selection: $profile.budgetStyle) {
                         ForEach(BudgetInput.BudgetStyle.allCases, id: \.self) { style in
                             Text(style.displayName).tag(style)
@@ -170,10 +383,8 @@ struct ProfileQuickSetupView: View {
                     .pickerStyle(.segmented)
                 }
             }
-            .padding()
-            .foregroundStyle(.white)
-            .tint(.white)
         }
-        .scrollContentBackground(.hidden)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(stepContentPadding)
     }
 }

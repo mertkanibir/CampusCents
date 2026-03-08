@@ -3,80 +3,118 @@ import SwiftUI
 struct SummaryCard: View {
     @EnvironmentObject var state: AppState
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Hi, \(state.profile.name)")
-                    .font(.headline)
-                Text("Budget health score: \(state.healthScore)")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-
-            Text(state.remaining.currency)
-                .font(.system(size: 26, weight: .bold))
-            Text("Remaining this cycle")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-
-            ProgressView(value: state.spent / max(state.total, 1))
-                .tint(Colors.mint)
-                .controlSize(.small)
-
-            HStack(alignment: .center, spacing: 8) {
-                Label("Income \(state.profile.monthlyIncome.currency)", systemImage: "arrow.down.circle.fill")
-                    .font(.caption2)
-                Spacer(minLength: 4)
-                HStack(spacing: 6) {
-                    ringSection(title: "Spent", value: state.spent, total: state.total, tint: Colors.rose)
-                    ringSection(title: "Remaining", value: state.remaining, total: state.total, tint: Colors.mint)
-                }
-                Spacer(minLength: 4)
-                Label("Spent \(state.spent.currency)", systemImage: "arrow.up.circle.fill")
-                    .font(.caption2)
-            }
-            .foregroundStyle(.secondary)
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Colors.sky.opacity(0.35), lineWidth: 1)
-                )
-        )
-        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
+    private var spentRatio: CGFloat {
+        CGFloat(state.spent / max(state.total, 1))
     }
 
-    private func ringSection(title: String, value: Double, total: Double, tint: Color) -> some View {
-        let progress = value / max(total, 1)
-        return VStack(spacing: 2) {
-            ZStack {
-                Circle()
-                    .stroke(tint.opacity(0.25), lineWidth: 3)
-                Circle()
-                    .trim(from: 0, to: CGFloat(progress))
-                    .stroke(tint, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                Text("\(Int(progress * 100))%")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(.secondary)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header: greeting + health badge
+            HStack(alignment: .center) {
+                Text("Hi, \(state.profile.name)")
+                    .font(.title3.weight(.semibold))
+                Spacer()
+                Text("Health \(state.healthScore)")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(Colors.mint)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Colors.mint.opacity(0.2), in: Capsule())
             }
-            .frame(width: 36, height: 36)
-            Text(title)
-                .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(.secondary)
+            .padding(.bottom, 16)
+
+            // Hero: remaining amount + one clear progress ring
+            HStack(alignment: .top, spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Remaining")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Text(state.remaining.currency)
+                        .font(.system(size: 32, weight: .bold))
+                        .contentTransition(.numericText())
+                }
+
+                Spacer(minLength: 8)
+
+                ZStack {
+                    Circle()
+                        .stroke(Color.secondary.opacity(0.12), lineWidth: 6)
+                    Circle()
+                        .trim(from: 0, to: 1 - spentRatio)
+                        .stroke(
+                            Colors.mint,
+                            style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                    Circle()
+                        .trim(from: 1 - spentRatio, to: 1)
+                        .stroke(
+                            Colors.rose.opacity(0.9),
+                            style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: 0) {
+                        Text("\(Int(spentRatio * 100))%")
+                            .font(.system(size: 13, weight: .bold))
+                        Text("used")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(width: 72, height: 72)
+            }
+            .padding(.bottom, 16)
+
+            // Income vs Spent: two clear metric blocks
+            HStack(spacing: 10) {
+                metricBlock(
+                    title: "Income",
+                    amount: state.profile.monthlyIncome,
+                    icon: "arrow.down.circle.fill",
+                    tint: Colors.mint
+                )
+                metricBlock(
+                    title: "Spent",
+                    amount: state.spent,
+                    icon: "arrow.up.circle.fill",
+                    tint: Colors.rose
+                )
+            }
         }
-        .frame(width: 44)
-        .padding(.vertical, 6)
-        .padding(.horizontal, 4)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.ultraThinMaterial.opacity(0.6))
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(Colors.sky.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .shadow(color: .black.opacity(0.06), radius: 14, y: 6)
+    }
+
+    private func metricBlock(title: String, amount: Double, icon: String, tint: Color) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(tint)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Text(amount.currency)
+                    .font(.subheadline.weight(.semibold))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(tint.opacity(0.12))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(tint.opacity(0.2), lineWidth: 1)
         )
     }

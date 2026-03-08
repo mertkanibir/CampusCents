@@ -39,6 +39,7 @@ struct AffordabilityView: View {
             }
             .padding()
             .navigationTitle("Affordability")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showScenarioSheet) {
                 ScenarioSheet()
                     .environmentObject(state)

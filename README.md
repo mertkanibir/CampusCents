@@ -20,30 +20,5 @@ An intelligent budgeting app for college students. Track spending, plan your mon
 
 Open the project in Xcode and run it on an iOS simulator or device.
 
-# DELETE FROM README LATER
-# TO-DO
-## HIGH PRIORITY
-- AI chatbot & insights integration [x]
-- Remake onboarding [x] 
-- Use appleID profile images? [ ]
-- Clean up UI [ ]
-- Profile [ ]
-- Insights rework [x]
-- Add in major calculations to README or additional markdown [ ]
-- REDO budget page - lp [ ]
-- Scrolling down the time overlaps the contents - add fade under? [ ]
-- "Check if a purchase fit.." gets cut off
-- FIX LIGHT MODE [ ]
-- Make notable when overbudget []
-- Meal plan should be per semester, or option for month if user wants []
-
-  
-## LOW PRIORITY
-- Have expenses show as (-) in activity and red text [ ]
-- Allow for additional income (+) and green [ ]
-- Widgets [ ]
-
-
-
 
 

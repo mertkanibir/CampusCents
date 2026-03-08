@@ -64,9 +64,9 @@ final class AppState: ObservableObject {
         for category in categories where category.kind != .aid {
             let ratio = category.spent / max(category.budget, 1)
             if ratio > 1.0 {
-                items.append(.init(id: "over-\(category.kind.rawValue)", icon: "exclamationmark.triangle.fill", title: "\(category.name) is over budget", detail: "Spent \(category.spent.currency) on a \(category.budget.currency) budget.", tint: Colors.peach, tone: .watch))
+                items.append(.init(id: "over-\(category.id.uuidString)", icon: "exclamationmark.triangle.fill", title: "\(category.name) is over budget", detail: "Spent \(category.spent.currency) on a \(category.budget.currency) budget.", tint: Colors.peach, tone: .watch))
             } else if ratio > 0.85 {
-                items.append(.init(id: "limit-\(category.kind.rawValue)", icon: "gauge.with.needle.fill", title: "\(category.name) is close to limit", detail: "Only \((category.budget - category.spent).currency) remains.", tint: Colors.sun, tone: .watch))
+                items.append(.init(id: "limit-\(category.id.uuidString)", icon: "gauge.with.needle.fill", title: "\(category.name) is close to limit", detail: "Only \((category.budget - category.spent).currency) remains.", tint: Colors.sun, tone: .watch))
             }
         }
 
@@ -106,7 +106,28 @@ final class AppState: ObservableObject {
             categories[index].spent = max(0, value)
         } else if kind == .investment {
             profile.investments = max(0, value)
+        } else if case .custom(let id, _, _, _, _) = kind {
+            if let customIdx = profile.customCategories.firstIndex(where: {
+                if case .custom(let cid, _, _, _, _) = $0.kind { return cid == id }
+                return false
+            }) {
+                profile.customCategories[customIdx].budget = max(0, value)
+            }
         }
+    }
+
+    func addCustomCategory(name: String, budget: Double, isIncome: Bool, color: Color) {
+        let idString = UUID().uuidString
+        let newKind = BudgetCategory.Kind.custom(id: idString, name: name, icon: isIncome ? "plus.circle.fill" : "bag.fill", tint: ColorValue(color), isIncome: isIncome)
+        let newCategory = BudgetCategory(id: UUID(), kind: newKind, name: name, budget: budget, spent: 0, color: ColorValue(color))
+        
+        categories.append(newCategory)
+        profile.customCategories.append(newCategory)
+    }
+
+    func removeCategory(_ category: BudgetCategory) {
+        categories.removeAll { $0.id == category.id }
+        profile.customCategories.removeAll { $0.id == category.id }
     }
 
     func addTransaction(title: String, amount: Double, date: Date, category: BudgetCategory.Kind) {
@@ -216,20 +237,19 @@ final class AppState: ObservableObject {
 
 extension AppState {
     var budgetInput: BudgetInput {
-        BudgetInput(
-            tuition: profile.tuition,
-            aidScholarships: profile.scholarshipsAid,
-            rent: profile.rent + profile.utilities,
-            mealPlan: profile.mealPlan,
-            groceries: profile.groceries,
-            transportation: profile.transportation,
-            subscriptions: profile.subscriptions,
-            personal: profile.personal,
+        let incomes = categories.filter { $0.kind.isIncome }.map {
+            BudgetInput.CategoryInput(name: $0.name, budget: $0.budget, spent: $0.spent)
+        }
+        let expenses = categories.filter { !$0.kind.isIncome }.map {
+            BudgetInput.CategoryInput(name: $0.name, budget: $0.budget, spent: $0.spent)
+        }
+        
+        return BudgetInput(
             savingsGoal: profile.savingsGoal,
-            monthlyIncome: profile.monthlyIncome,
-            investments: profile.investments,
             budgetStyle: profile.budgetStyle,
-            housingType: profile.housingType
+            housingType: profile.housingType,
+            incomes: incomes,
+            expenses: expenses
         )
     }
 }

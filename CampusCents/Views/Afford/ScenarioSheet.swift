@@ -128,15 +128,15 @@ struct ScenarioSheet: View {
             var alternative = base
             alternative.housingType = base.housingType == .onCampus ? .offCampus : .onCampus
             if base.housingType == .onCampus {
-                alternative.rent += 180
-                alternative.mealPlan = max(0, base.mealPlan - 140)
-                alternative.groceries += 90
-                alternative.transportation += 40
+                alternative.adjustExpense(named: "Rent", by: 180)
+                alternative.setExpense(named: "Meal Plan", to: max(0, alternative.getExpense(named: "Meal Plan") - 140))
+                alternative.adjustExpense(named: "Groceries", by: 90)
+                alternative.adjustExpense(named: "Transport", by: 40)
             } else {
-                alternative.rent = max(0, base.rent - 180)
-                alternative.mealPlan += 140
-                alternative.groceries = max(0, base.groceries - 90)
-                alternative.transportation = max(0, base.transportation - 40)
+                alternative.setExpense(named: "Rent", to: max(0, alternative.getExpense(named: "Rent") - 180))
+                alternative.adjustExpense(named: "Meal Plan", by: 140)
+                alternative.setExpense(named: "Groceries", to: max(0, alternative.getExpense(named: "Groceries") - 90))
+                alternative.setExpense(named: "Transport", to: max(0, alternative.getExpense(named: "Transport") - 40))
             }
             return ScenarioInput(
                 nameA: "Current \(base.housingType.displayName)",
@@ -146,7 +146,7 @@ struct ScenarioSheet: View {
             )
         case .subscriptions:
             var alternative = base
-            alternative.subscriptions = 0
+            alternative.setExpense(named: "Subscriptions", to: 0)
             return ScenarioInput(
                 nameA: "Keep Subscriptions",
                 scenarioA: base,

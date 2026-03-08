@@ -15,6 +15,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         case personal
         case custom(id: String, name: String, icon: String, tint: ColorValue, isIncome: Bool)
 
+        // Custom Codable implementation to support existing String values
         init(from decoder: Decoder) throws {
             if let str = try? decoder.singleValueContainer().decode(String.self) {
                 switch str {
@@ -185,6 +186,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             )
         }
         
+        // Add custom categories
         categories.append(contentsOf: profile.customCategories)
         
         return categories

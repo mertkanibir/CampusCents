@@ -13,21 +13,20 @@ enum Prompts: Sendable {
     """
 
     nonisolated static func snapshotPrompt(for input: BudgetInput) -> String {
-        """
+        let incomesList = input.incomes.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        let expensesList = input.expenses.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        
+        return """
         Analyze this student budget and return concise structured insights.
 
         Student budget data:
-        - Tuition: \(input.tuition.formatted(.currency(code: "USD")))
-        - Aid/Scholarships: \(input.aidScholarships.formatted(.currency(code: "USD")))
-        - Housing: \(input.rent.formatted(.currency(code: "USD")))
-        - Meal plan: \(input.mealPlan.formatted(.currency(code: "USD")))
-        - Groceries: \(input.groceries.formatted(.currency(code: "USD")))
-        - Transportation: \(input.transportation.formatted(.currency(code: "USD")))
-        - Subscriptions: \(input.subscriptions.formatted(.currency(code: "USD")))
-        - Personal spending: \(input.personal.formatted(.currency(code: "USD")))
+        Incomes:
+        \(incomesList)
+        
+        Expenses:
+        \(expensesList)
+        
         - Savings goal: \(input.savingsGoal.formatted(.currency(code: "USD")))
-        - Monthly income: \(input.monthlyIncome.formatted(.currency(code: "USD")))
-        - Investments: \(input.investments.formatted(.currency(code: "USD")))
         - Budget style: \(input.budgetStyle.displayName)
         - Housing type: \(input.housingType.displayName)
 
@@ -39,7 +38,10 @@ enum Prompts: Sendable {
     }
 
     nonisolated static func affordabilityPrompt(for input: PurchaseInput) -> String {
-        """
+        let incomesList = input.snapshot.incomes.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        let expensesList = input.snapshot.expenses.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        
+        return """
         Reflect on affordability impact for this proposed purchase.
 
         Purchase:
@@ -47,17 +49,14 @@ enum Prompts: Sendable {
         - Price: \(input.amount.formatted(.currency(code: "USD")))
 
         Existing budget:
-        - Tuition: \(input.snapshot.tuition.formatted(.currency(code: "USD")))
-        - Aid: \(input.snapshot.aidScholarships.formatted(.currency(code: "USD")))
-        - Housing: \(input.snapshot.rent.formatted(.currency(code: "USD")))
-        - Meal plan: \(input.snapshot.mealPlan.formatted(.currency(code: "USD")))
-        - Groceries: \(input.snapshot.groceries.formatted(.currency(code: "USD")))
-        - Transportation: \(input.snapshot.transportation.formatted(.currency(code: "USD")))
-        - Subscriptions: \(input.snapshot.subscriptions.formatted(.currency(code: "USD")))
-        - Personal spending: \(input.snapshot.personal.formatted(.currency(code: "USD")))
+        Incomes:
+        \(incomesList)
+        
+        Expenses:
+        \(expensesList)
+        
         - Savings goal: \(input.snapshot.savingsGoal.formatted(.currency(code: "USD")))
-        - Monthly income: \(input.snapshot.monthlyIncome.formatted(.currency(code: "USD")))
-        - Investments: \(input.snapshot.monthlyIncome.formatted(.currency(code: "USD")))
+
         Output constraints:
         - Focus on runway, flexibility, and tradeoff framing.
         - Keep summary under 2 sentences.
@@ -66,29 +65,27 @@ enum Prompts: Sendable {
     }
 
     nonisolated static func scenarioPrompt(for input: ScenarioInput) -> String {
-        """
+        let aIncomes = input.scenarioA.incomes.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        let aExpenses = input.scenarioA.expenses.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        
+        let bIncomes = input.scenarioB.incomes.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        let bExpenses = input.scenarioB.expenses.map { "- \($0.name): \($0.budget.formatted(.currency(code: "USD")))" }.joined(separator: "\n        ")
+        
+        return """
         Compare two student budget scenarios using concise, calm language.
 
         Scenario A: \(input.nameA)
-        - Tuition: \(input.scenarioA.tuition.formatted(.currency(code: "USD")))
-        - Aid: \(input.scenarioA.aidScholarships.formatted(.currency(code: "USD")))
-        - Housing: \(input.scenarioA.rent.formatted(.currency(code: "USD")))
-        - Meal plan: \(input.scenarioA.mealPlan.formatted(.currency(code: "USD")))
-        - Groceries: \(input.scenarioA.groceries.formatted(.currency(code: "USD")))
-        - Transportation: \(input.scenarioA.transportation.formatted(.currency(code: "USD")))
-        - Subscriptions: \(input.scenarioA.subscriptions.formatted(.currency(code: "USD")))
-        - Personal spending: \(input.scenarioA.personal.formatted(.currency(code: "USD")))
+        Incomes:
+        \(aIncomes)
+        Expenses:
+        \(aExpenses)
         - Savings goal: \(input.scenarioA.savingsGoal.formatted(.currency(code: "USD")))
 
         Scenario B: \(input.nameB)
-        - Tuition: \(input.scenarioB.tuition.formatted(.currency(code: "USD")))
-        - Aid: \(input.scenarioB.aidScholarships.formatted(.currency(code: "USD")))
-        - Housing: \(input.scenarioB.rent.formatted(.currency(code: "USD")))
-        - Meal plan: \(input.scenarioB.mealPlan.formatted(.currency(code: "USD")))
-        - Groceries: \(input.scenarioB.groceries.formatted(.currency(code: "USD")))
-        - Transportation: \(input.scenarioB.transportation.formatted(.currency(code: "USD")))
-        - Subscriptions: \(input.scenarioB.subscriptions.formatted(.currency(code: "USD")))
-        - Personal spending: \(input.scenarioB.personal.formatted(.currency(code: "USD")))
+        Incomes:
+        \(bIncomes)
+        Expenses:
+        \(bExpenses)
         - Savings goal: \(input.scenarioB.savingsGoal.formatted(.currency(code: "USD")))
 
         Output constraints:

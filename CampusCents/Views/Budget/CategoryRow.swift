@@ -2,18 +2,19 @@ import SwiftUI
 
 struct CategoryRow: View {
     @EnvironmentObject var state: AppState
+    @Environment(\.colorScheme) private var colorScheme
     let category: BudgetCategory
     @State private var budgetText = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Label(category.name, systemImage: category.kind.icon)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
                 Spacer()
                 Text("\(category.spent.currency) / \(category.budget.currency)")
-                    .font(.caption)
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
 
@@ -24,16 +25,34 @@ struct CategoryRow: View {
                 TextField("Set budget", text: $budgetText)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(.roundedBorder)
+                
                 Button("Update") {
                     if let value = Double(budgetText.replacingOccurrences(of: ",", with: ".")) {
                         state.updateBudget(for: category.kind, value: value)
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(Colors.periwinkle)
+                .tint(category.kind.tint)
+                
+                if case .custom = category.kind {
+                    Button(role: .destructive) {
+                        withAnimation {
+                            state.removeCategory(category)
+                        }
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
+                }
             }
         }
-        .padding(.vertical, 6)
+        .padding(16)
+        .background(category.kind.tint.opacity(colorScheme == .dark ? 0.2 : 0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(category.kind.tint.opacity(colorScheme == .dark ? 0.4 : 0.3), lineWidth: 1)
+        }
         .onAppear {
             budgetText = String(format: "%.0f", category.budget)
         }

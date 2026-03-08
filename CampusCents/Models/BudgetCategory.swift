@@ -3,6 +3,7 @@ import SwiftUI
 struct BudgetCategory: Identifiable, Hashable, Codable {
     enum Kind: Hashable, Codable, Equatable {
         case income
+        case savings
         case investment
         case tuition
         case aid
@@ -15,11 +16,11 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         case personal
         case custom(id: String, name: String, desc: String, icon: String, tint: ColorValue, isIncome: Bool)
 
-        // Custom Codable implementation to support existing String values
         init(from decoder: Decoder) throws {
             if let str = try? decoder.singleValueContainer().decode(String.self) {
                 switch str {
                 case "income": self = .income
+                case "savings": self = .savings
                 case "investment": self = .investment
                 case "tuition": self = .tuition
                 case "aid": self = .aid
@@ -66,6 +67,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
                 let strVal: String
                 switch self {
                 case .income: strVal = "income"
+                case .savings: strVal = "savings"
                 case .investment: strVal = "investment"
                 case .tuition: strVal = "tuition"
                 case .aid: strVal = "aid"
@@ -92,6 +94,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         var displayName: String {
             switch self {
             case .income: return "Income"
+            case .savings: return "Savings"
             case .investment: return "Investments"
             case .tuition: return "Tuition"
             case .aid: return "Scholarships & Aid"
@@ -109,6 +112,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         var icon: String {
             switch self {
             case .income: return "dollarsign.circle.fill"
+            case .savings: return "building.columns.fill"
             case .investment: return "chart.pie.fill"
             case .tuition: return "graduationcap.fill"
             case .aid: return "gift.fill"
@@ -126,6 +130,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         var tint: Color {
             switch self {
             case .income: return Colors.mint
+            case .savings: return Colors.blueMint
             case .investment: return Colors.periwinkle
             case .tuition: return Colors.rose
             case .aid: return Colors.mint
@@ -142,7 +147,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         
         var isIncome: Bool {
             switch self {
-            case .income: return true
+            case .income, .savings: return true
             case .custom(_, _, _, _, _, let isInc): return isInc
             default: return false
             }
@@ -166,11 +171,12 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
     }
 
     static func from(profile: StudentProfile) -> [BudgetCategory] {
-        let kinds: [Kind] = [.income, .investment, .tuition, .rent, .groceries, .subscriptions, .personal]
+        let kinds: [Kind] = [.income, .savings, .investment, .tuition, .rent, .groceries, .subscriptions, .personal]
         var categories = kinds.map { kind in
             let budget: Double
             switch kind {
             case .income: budget = profile.monthlyIncome
+            case .savings: budget = profile.savings
             case .investment: budget = profile.investments
             case .tuition: budget = profile.tuition
             case .rent: budget = profile.rent
@@ -197,6 +203,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
     static let sample: [BudgetCategory] = [
         .init(id: UUID(), kind: .income, name: "Monthly Income", budget: 700, spent: 700, color: .init(Colors.mint)),
+        .init(id: UUID(), kind: .savings, name: "Savings", budget: 1500, spent: 1500, color: .init(Colors.blueMint)),
         .init(id: UUID(), kind: .investment, name: "Investments", budget: 200, spent: 0, color: .init(Colors.periwinkle)),
         
         .init(id: UUID(), kind: .tuition, name: "Tuition", budget: 6200, spent: 6200, color: .init(Colors.rose)),

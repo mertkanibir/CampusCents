@@ -382,7 +382,7 @@ private func isWizardStepComplete(profile: StudentProfile, step: SetupStep) -> B
         return !profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !profile.school.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     case .income:
-        return profile.monthlyIncome >= 0 && profile.tuition >= 0 && profile.scholarshipsAid >= 0
+        return profile.monthlyIncome >= 0 && profile.savings >= 0 && profile.tuition >= 0 && profile.scholarshipsAid >= 0
     case .housing:
         return profile.rent >= 0 && profile.utilities >= 0
     case .food:
@@ -517,6 +517,9 @@ struct OnboardingSetupView: View {
     private var incomeStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
             sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Per month unless noted", accent: Colors.mint)
+            formField(label: "Current savings", hint: "Money already in the bank") {
+                LabeledNumberField("", value: $profile.savings, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
+            }
             formField(label: "Monthly income", hint: "Jobs, side gigs, allowance") {
                 LabeledNumberField("", value: $profile.monthlyIncome, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }

@@ -37,7 +37,7 @@ struct OnboardingView: View {
                 endPoint: .bottomTrailing
             )
         }
-        return Colors.appGradient
+        return Colors.appGradient(for: colorScheme)
     }
 
     private var primaryLabel: Color {

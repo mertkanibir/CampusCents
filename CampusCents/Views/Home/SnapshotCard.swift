@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SnapshotCard: View {
     @EnvironmentObject var state: AppState
+    @Environment(\.colorScheme) private var colorScheme
     @State private var service = AIService()
     @State private var response: AIResponse?
     @State private var availability: AIStatus = .frameworkUnavailable
@@ -40,7 +41,7 @@ struct SnapshotCard: View {
                 Text(response.summary)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(colorScheme == .dark ? .primary : Color.black.opacity(0.85))
                 ForEach(Array(response.points.prefix(3).enumerated()), id: \.element) { index, point in
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "circle.fill")
@@ -49,7 +50,7 @@ struct SnapshotCard: View {
                             .padding(.top, 5)
                         Text(point)
                             .font(.caption)
-                            .foregroundStyle(.primary.opacity(0.85))
+                            .foregroundStyle(colorScheme == .dark ? .primary.opacity(0.85) : Color.black.opacity(0.72))
                     }
                 }
             } else {
@@ -60,32 +61,37 @@ struct SnapshotCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity, minHeight: 170, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(
-                    AngularGradient(
-                        colors: rainbowColors,
-                        center: .center,
-                        angle: .degrees(rainbowPhase)
-                    ),
-                    lineWidth: 1.6
-                )
-                .opacity(0.9)
+                .strokeBorder(Colors.cardStroke(for: colorScheme), lineWidth: 1)
                 .overlay {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(
+                        .strokeBorder(
                             AngularGradient(
                                 colors: rainbowColors,
                                 center: .center,
                                 angle: .degrees(rainbowPhase)
                             ),
-                            lineWidth: 7
+                            lineWidth: 1.6
                         )
-                        .blur(radius: 9)
-                        .opacity(0.42)
+                        .opacity(colorScheme == .dark ? 0.9 : 0.85)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(
+                                    AngularGradient(
+                                        colors: rainbowColors,
+                                        center: .center,
+                                        angle: .degrees(rainbowPhase)
+                                    ),
+                                    lineWidth: 7
+                                )
+                                .blur(radius: 9)
+                                .opacity(colorScheme == .dark ? 0.42 : 0.28)
+                        }
                 }
         }
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.16 : 0.08), radius: 14, y: 8)
         .onAppear {
             withAnimation(.linear(duration: 12).repeatForever(autoreverses: false)) {
                 rainbowPhase = 360

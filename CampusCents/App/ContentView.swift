@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var state = AppState()
 
     var body: some View {
         ZStack {
-            Colors.appGradient.ignoresSafeArea()
+            Colors.appGradient(for: colorScheme).ignoresSafeArea()
 
             if state.hasCompletedOnboarding {
                 MainTabView()

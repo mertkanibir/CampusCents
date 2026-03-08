@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SummaryCard: View {
     @EnvironmentObject var state: AppState
+    @Environment(\.colorScheme) private var colorScheme
     private let rowHeight: CGFloat = 68
 
     private var daysLeftInMonth: Int {
@@ -32,7 +33,7 @@ struct SummaryCard: View {
                     label: "\(daysLeftInMonth) days left",
                     value: "~\(dailyBudget.currency)/day",
                     valueFont: .system(size: 28, weight: .bold),
-                    valueColor: Colors.mint
+                    valueColor: colorScheme == .dark ? Colors.mint : Colors.periwinkle
                 )
                 metricBlock(
                     title: "Income",
@@ -59,13 +60,13 @@ struct SummaryCard: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Colors.cardFill(for: colorScheme))
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(Colors.sky.opacity(0.3), lineWidth: 1)
+                        .stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1.1)
                 )
         )
-        .shadow(color: .black.opacity(0.08), radius: 14, y: 6)
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.18 : 0.1), radius: 16, y: 8)
     }
 
     private func leftCell(
@@ -77,7 +78,7 @@ struct SummaryCard: View {
         VStack(alignment: .leading, spacing: lineSpacing) {
             Text(label)
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(colorScheme == .dark ? Color.secondary : Color.primary.opacity(0.72))
             Text(value)
                 .font(valueFont)
                 .foregroundStyle(valueColor)
@@ -107,11 +108,11 @@ struct SummaryCard: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(tint.opacity(0.26))
+                .fill(Colors.metricFill(tint, scheme: colorScheme))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(tint.opacity(0.52), lineWidth: 1.1)
+                .stroke(Colors.metricStroke(tint, scheme: colorScheme), lineWidth: 1.1)
         )
     }
 

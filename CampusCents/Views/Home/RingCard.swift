@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RingCard: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let value: Double
     let total: Double
@@ -10,7 +11,7 @@ struct RingCard: View {
         VStack(spacing: 8) {
             ZStack {
                 Circle()
-                    .stroke(Color.secondary.opacity(0.18), lineWidth: 10)
+                    .stroke(colorScheme == .dark ? Color.secondary.opacity(0.22) : Color.black.opacity(0.08), lineWidth: 10)
                 Circle()
                     .trim(from: 0, to: CGFloat(value / max(total, 1)))
                     .stroke(tint, style: StrokeStyle(lineWidth: 10, lineCap: .round))
@@ -28,6 +29,10 @@ struct RingCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1)
+        }
     }
 }

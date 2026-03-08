@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         TabView {
             DashboardView()
@@ -19,5 +21,7 @@ struct MainTabView: View {
                 .tabItem { Label("Add", systemImage: "plus.circle.fill") }
         }
         .tint(Colors.periwinkle)
+        .toolbarBackground(colorScheme == .dark ? Color.black.opacity(0.32) : Color.white.opacity(0.92), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 }

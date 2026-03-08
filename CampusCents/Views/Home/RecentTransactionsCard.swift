@@ -2,16 +2,17 @@ import SwiftUI
 
 struct RecentTransactionsCard: View {
     @EnvironmentObject var state: AppState
+    @Environment(\.colorScheme) private var colorScheme
     let transactions: [Transaction]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Recent Activity")
-                .font(.headline)
+                .font(.headline.weight(.semibold))
 
             if transactions.isEmpty {
                 Text("No transactions yet. Tap + to add one.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(colorScheme == .dark ? .secondary : Color.black.opacity(0.62))
                     .font(.subheadline)
             } else {
                 ForEach(transactions.prefix(6)) { transaction in
@@ -39,10 +40,10 @@ struct RecentTransactionsCard: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(transaction.title)
-                                .font(.subheadline)
+                                .font(.subheadline.weight(.semibold))
                             Text(transaction.date.formatted(date: .abbreviated, time: .omitted))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colorScheme == .dark ? .secondary : Color.black.opacity(0.58))
                         }
                         Spacer()
                         Text(transaction.amount.currency)
@@ -59,6 +60,11 @@ struct RecentTransactionsCard: View {
             }
         }
         .padding()
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Colors.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Colors.cardStroke(for: colorScheme), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(colorScheme == .dark ? 0.16 : 0.08), radius: 14, y: 8)
     }
 }

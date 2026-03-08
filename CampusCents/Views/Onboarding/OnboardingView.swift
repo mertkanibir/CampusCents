@@ -526,17 +526,17 @@ struct OnboardingSetupView: View {
 
     private var incomeStep: some View {
         VStack(alignment: .leading, spacing: gridSpacing) {
-            sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Your income and school costs drive your budget. Enter amounts per month unless we say otherwise (e.g. tuition per term).", accent: Colors.mint)
-            formField(label: "Current savings", hint: "Money already in the bank") {
+            sectionHeader(icon: "dollarsign.circle.fill", title: "Financial Details", subtitle: "Your income and school costs drive your budget. Enter amounts per month.", accent: Colors.mint)
+            formField(label: "Monthly savings", hint: "Contribution from your savings each month") {
                 LabeledNumberField("", value: $profile.savings, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
             formField(label: "Monthly income", hint: "Jobs, side gigs, allowance — what you actually take in each month") {
                 LabeledNumberField("", value: $profile.monthlyIncome, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Tuition per term", hint: "Total tuition for one term (fall, spring, or summer)") {
+            formField(label: "Tuition", hint: "Total tuition per month (Per semester / 4)") {
                 LabeledNumberField("", value: $profile.tuition, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
-            formField(label: "Scholarships & aid", hint: "Financial aid, grants, or scholarships applied per term") {
+            formField(label: "Scholarships & aid", hint: "Financial aid, grants, or scholarships applied per month") {
                 LabeledNumberField("", value: $profile.scholarshipsAid, isCurrency: true, labelColor: secondaryLabel, textColor: inputText, backgroundColor: inputBg, cornerRadius: 16, strokeColor: inputStroke)
             }
         }

@@ -159,19 +159,15 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
     }
 
     static func from(profile: StudentProfile) -> [BudgetCategory] {
-        let kinds: [Kind] = [.tuition, .aid, .rent, .utilities, .mealPlan, .groceries, .transportation, .subscriptions, .personal]
+        let kinds: [Kind] = [.income, .investment, .tuition, .rent, .groceries, .subscriptions, .personal]
         var categories = kinds.map { kind in
             let budget: Double
             switch kind {
             case .income: budget = profile.monthlyIncome
             case .investment: budget = profile.investments
             case .tuition: budget = profile.tuition
-            case .aid: budget = profile.scholarshipsAid
             case .rent: budget = profile.rent
-            case .utilities: budget = profile.utilities
-            case .mealPlan: budget = profile.mealPlan
             case .groceries: budget = profile.groceries
-            case .transportation: budget = profile.transportation
             case .subscriptions: budget = profile.subscriptions
             case .personal: budget = profile.personal
             default: budget = 0
@@ -197,12 +193,8 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         .init(id: UUID(), kind: .investment, name: "Investments", budget: 200, spent: 0, color: .init(Colors.periwinkle)),
         
         .init(id: UUID(), kind: .tuition, name: "Tuition", budget: 6200, spent: 6200, color: .init(Colors.rose)),
-        .init(id: UUID(), kind: .aid, name: "Scholarships & Aid", budget: 3500, spent: 0, color: .init(Colors.mint)),
         .init(id: UUID(), kind: .rent, name: "Rent", budget: 750, spent: 750, color: .init(Colors.sky)),
-        .init(id: UUID(), kind: .utilities, name: "Utilities", budget: 120, spent: 110, color: .init(Colors.lavender)),
-        .init(id: UUID(), kind: .mealPlan, name: "Meal Plan", budget: 280, spent: 210, color: .init(Colors.sun)),
         .init(id: UUID(), kind: .groceries, name: "Groceries", budget: 220, spent: 190, color: .init(Colors.blueMint)),
-        .init(id: UUID(), kind: .transportation, name: "Transport", budget: 90, spent: 60, color: .init(Colors.periwinkle)),
         .init(id: UUID(), kind: .subscriptions, name: "Subscriptions", budget: 35, spent: 28, color: .init(Colors.pistachio)),
         .init(id: UUID(), kind: .personal, name: "Personal", budget: 180, spent: 140, color: .init(Colors.peach))
     ]

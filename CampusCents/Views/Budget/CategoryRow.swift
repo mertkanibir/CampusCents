@@ -34,7 +34,8 @@ struct CategoryRow: View {
                 .buttonStyle(.borderedProminent)
                 .tint(category.kind.tint)
                 
-                if case .custom = category.kind {
+                let essentialKinds: [BudgetCategory.Kind] = [.income, .investment, .tuition, .rent, .groceries, .subscriptions, .personal]
+                if !essentialKinds.contains(category.kind) {
                     Button(role: .destructive) {
                         withAnimation {
                             state.removeCategory(category)

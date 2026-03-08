@@ -24,7 +24,7 @@ struct SnapshotCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label("AI Snapshot", systemImage: "sparkles.rectangle.stack")
+                Label("AI Overview", systemImage: "sparkles.rectangle.stack")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(
                         LinearGradient(

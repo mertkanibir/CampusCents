@@ -3,14 +3,16 @@ import SwiftUI
 struct LabeledNumberField: View {
     let title: String
     @Binding var value: Double
+    var hint: String? = nil
     var labelColor: Color = .secondary
     var textColor: Color = .primary
     var backgroundColor: Color? = nil
     @State private var text: String = ""
 
-    init(_ title: String, value: Binding<Double>, labelColor: Color = .secondary, textColor: Color = .primary, backgroundColor: Color? = nil) {
+    init(_ title: String, value: Binding<Double>, hint: String? = nil, labelColor: Color = .secondary, textColor: Color = .primary, backgroundColor: Color? = nil) {
         self.title = title
         self._value = value
+        self.hint = hint
         self.labelColor = labelColor
         self.textColor = textColor
         self.backgroundColor = backgroundColor
@@ -22,6 +24,11 @@ struct LabeledNumberField: View {
             Text(title)
                 .font(.footnote)
                 .foregroundStyle(labelColor)
+            if let hint {
+                Text(hint)
+                    .font(.caption2)
+                    .foregroundStyle(labelColor.opacity(0.8))
+            }
             if backgroundColor != nil {
                 TextField(title, text: $text)
                     .keyboardType(.decimalPad)

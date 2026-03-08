@@ -3,13 +3,15 @@ import SwiftUI
 struct LabeledField: View {
     let title: String
     @Binding var value: String
+    var hint: String? = nil
     var labelColor: Color = .secondary
     var textColor: Color = .primary
     var backgroundColor: Color? = nil
 
-    init(_ title: String, value: Binding<String>, labelColor: Color = .secondary, textColor: Color = .primary, backgroundColor: Color? = nil) {
+    init(_ title: String, value: Binding<String>, hint: String? = nil, labelColor: Color = .secondary, textColor: Color = .primary, backgroundColor: Color? = nil) {
         self.title = title
         self._value = value
+        self.hint = hint
         self.labelColor = labelColor
         self.textColor = textColor
         self.backgroundColor = backgroundColor
@@ -20,6 +22,11 @@ struct LabeledField: View {
             Text(title)
                 .font(.footnote)
                 .foregroundStyle(labelColor)
+            if let hint {
+                Text(hint)
+                    .font(.caption2)
+                    .foregroundStyle(labelColor.opacity(0.8))
+            }
             if backgroundColor != nil {
                 TextField(title, text: $value)
                     .textFieldStyle(.plain)

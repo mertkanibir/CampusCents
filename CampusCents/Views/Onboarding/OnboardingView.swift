@@ -268,10 +268,17 @@ struct ProfileQuickSetupView: View {
         }
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.headline.weight(.semibold))
-            .foregroundStyle(.white)
+    private func sectionHeader(_ title: String, subtitle: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(.white)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.8))
+            }
+        }
     }
 
     private var yearRange: [Int] {
@@ -370,15 +377,18 @@ struct ProfileQuickSetupView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
 
-            sectionHeader("Profile")
+            sectionHeader("Profile", subtitle: "Basic info about you")
                 .padding(.bottom, 4)
             VStack(alignment: .leading, spacing: 16) {
-                LabeledField("Name", value: $profile.name, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
-                LabeledField("School", value: $profile.school, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledField("Name", value: $profile.name, hint: "Your full name", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledField("School", value: $profile.school, hint: "Your university or college", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Date of Graduation")
                         .font(.footnote)
                         .foregroundStyle(.white)
+                    Text("Expected graduation term")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.8))
                     HStack(spacing: 12) {
                         Picker("Season", selection: $termSeason) {
                             Text("Spring").tag("Spring")
@@ -405,10 +415,10 @@ struct ProfileQuickSetupView: View {
 
     private var incomeStepContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionHeader("Income")
+            sectionHeader("Income", subtitle: "All amounts are per month")
                 .padding(.bottom, 4)
             VStack(alignment: .leading, spacing: 16) {
-                LabeledNumberField("Income", value: $profile.monthlyIncome, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Income", value: $profile.monthlyIncome, hint: "Take-home pay you receive each month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -417,15 +427,18 @@ struct ProfileQuickSetupView: View {
 
     private var housingStepContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionHeader("Housing")
+            sectionHeader("Housing", subtitle: "Monthly housing costs")
                 .padding(.bottom, 4)
             VStack(alignment: .leading, spacing: 16) {
-                LabeledNumberField("Rent", value: $profile.rent, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
-                LabeledNumberField("Utilities", value: $profile.utilities, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Rent", value: $profile.rent, hint: "Rent you pay each month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Utilities", value: $profile.utilities, hint: "Electric, water, internet, etc. per month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Housing Type")
                         .font(.footnote)
                         .foregroundStyle(.white)
+                    Text("Where you live (on or off campus)")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.8))
                     Picker("Housing Type", selection: $profile.housingType) {
                         ForEach(BudgetInput.HousingType.allCases, id: \.self) { type in
                             Text(type.displayName).tag(type)
@@ -441,11 +454,11 @@ struct ProfileQuickSetupView: View {
 
     private var foodStepContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionHeader("Food")
+            sectionHeader("Food", subtitle: "Monthly food budget")
                 .padding(.bottom, 4)
             VStack(alignment: .leading, spacing: 16) {
-                LabeledNumberField("Meal Plan", value: $profile.mealPlan, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
-                LabeledNumberField("Groceries", value: $profile.groceries, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Meal Plan", value: $profile.mealPlan, hint: "Dining plan cost per month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Groceries", value: $profile.groceries, hint: "Monthly grocery spending", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -454,12 +467,12 @@ struct ProfileQuickSetupView: View {
 
     private var expensesStepContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionHeader("Other Expenses")
+            sectionHeader("Other Expenses", subtitle: "Monthly spending in these categories")
                 .padding(.bottom, 4)
             VStack(alignment: .leading, spacing: 16) {
-                LabeledNumberField("Transportation", value: $profile.transportation, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
-                LabeledNumberField("Subscriptions", value: $profile.subscriptions, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
-                LabeledNumberField("Personal", value: $profile.personal, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Transportation", value: $profile.transportation, hint: "Gas, transit, rideshare per month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Subscriptions", value: $profile.subscriptions, hint: "Streaming, apps, etc. per month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Personal", value: $profile.personal, hint: "Clothing, entertainment, misc. per month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -468,15 +481,18 @@ struct ProfileQuickSetupView: View {
 
     private var goalsStepContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionHeader("Goals & Preferences")
+            sectionHeader("Goals & Preferences", subtitle: "How you want to budget each month")
                 .padding(.bottom, 4)
             VStack(alignment: .leading, spacing: 16) {
-                LabeledNumberField("Savings Goal", value: $profile.savingsGoal, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
-                LabeledNumberField("Investments", value: $profile.investments, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Savings Goal", value: $profile.savingsGoal, hint: "Amount you want to save each month", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
+                LabeledNumberField("Investments", value: $profile.investments, hint: "Monthly amount you invest", labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Budget Style")
                         .font(.footnote)
                         .foregroundStyle(.white)
+                    Text("How your budget is planned")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.8))
                     Picker("Budget Style", selection: $profile.budgetStyle) {
                         ForEach(BudgetInput.BudgetStyle.allCases, id: \.self) { style in
                             Text(style.displayName).tag(style)

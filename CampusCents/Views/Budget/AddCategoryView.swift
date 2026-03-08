@@ -15,6 +15,19 @@ struct AddCategoryView: View {
         Colors.blueMint, Colors.pistachio, Colors.peach
     ]
 
+    private func saveAndDismiss() {
+        let value = Double(budgetText.replacingOccurrences(of: ",", with: ".")) ?? 0
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty, value > 0 else { return }
+        state.addCustomCategory(
+            name: trimmedName,
+            budget: value,
+            isIncome: isIncome,
+            color: selectedColor
+        )
+        dismiss()
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -58,19 +71,13 @@ struct AddCategoryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(action: { dismiss() }) {
+                        Text("Cancel")
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        let value = Double(budgetText.replacingOccurrences(of: ",", with: ".")) ?? 0
-                        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, value > 0 else { return }
-                        state.addCustomCategory(
-                            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
-                            budget: value,
-                            isIncome: isIncome,
-                            color: selectedColor
-                        )
-                        dismiss()
+                    Button(action: saveAndDismiss) {
+                        Text("Save")
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || budgetText.isEmpty)
                 }

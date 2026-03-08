@@ -145,6 +145,24 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
             default: return false
             }
         }
+
+        /// String identifier for this kind (e.g. for insight ids). Not RawRepresentable due to .custom.
+        var rawValue: String {
+            switch self {
+            case .income: return "income"
+            case .investment: return "investment"
+            case .tuition: return "tuition"
+            case .aid: return "aid"
+            case .rent: return "rent"
+            case .utilities: return "utilities"
+            case .mealPlan: return "mealPlan"
+            case .groceries: return "groceries"
+            case .transportation: return "transportation"
+            case .subscriptions: return "subscriptions"
+            case .personal: return "personal"
+            case .custom(let id, _, _, _, _): return id
+            }
+        }
     }
 
     let id: UUID

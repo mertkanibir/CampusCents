@@ -35,6 +35,7 @@ Open the project in Xcode and run it on an iOS simulator or device.
 - "Check if a purchase fit.." gets cut off
 - FIX LIGHT MODE [ ]
 - Make notable when overbudget !!!!
+- Meal plan should be per semester, or option for month if user wants
 
   
 ## LOW PRIORITY

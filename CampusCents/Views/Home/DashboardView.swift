@@ -9,7 +9,6 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     SummaryCard()
-                    SpentRemainingCard()
                     SnapshotCard()
                     RecentTransactionsCard(transactions: state.transactions.sorted(by: { $0.date > $1.date }))
                 }

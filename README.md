@@ -24,9 +24,12 @@ Open the project in Xcode and run it on an iOS simulator or device.
 # TO-DO
 ## HIGH PRIORITY
 - AI chatbot & insights integration [x]
-- Remake onboarding [ ]
-- Use appleID profile images? [ ]
+- Remake onboarding [ ] 
+- Use appleID profile images? [ ] REVOKED
 - Clean up UI [ ]
+- Profile [ ]
+- Insights rework [ ]
+- Add in major calculations to README or additional markdown [ ]
 
 - 
 ## LOW PRIORITY

@@ -94,7 +94,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
         var displayName: String {
             switch self {
             case .income: return "Income"
-            case .savings: return "Savings"
+            case .savings: return "Savings per month"
             case .investment: return "Investments"
             case .tuition: return "Tuition"
             case .aid: return "Scholarships & Aid"
@@ -241,7 +241,7 @@ struct BudgetCategory: Identifiable, Hashable, Codable {
 
     static let sample: [BudgetCategory] = [
         .init(id: UUID(), kind: .income, name: "Monthly Income", budget: 700, spent: 700, color: .init(Colors.mint)),
-        .init(id: UUID(), kind: .savings, name: "Savings", budget: 1500, spent: 1500, color: .init(Colors.blueMint)),
+        .init(id: UUID(), kind: .savings, name: "Savings per month", budget: 1500, spent: 1500, color: .init(Colors.blueMint)),
         .init(id: UUID(), kind: .investment, name: "Investments", budget: 200, spent: 0, color: .init(Colors.periwinkle)),
         
         .init(id: UUID(), kind: .tuition, name: "Tuition", budget: 6200, spent: 6200, color: .init(Colors.rose)),

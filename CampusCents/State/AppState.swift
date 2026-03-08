@@ -242,7 +242,7 @@ final class AppState: ObservableObject {
                 categories.insert(.init(id: UUID(), kind: .income, name: "Monthly Income", budget: profile.monthlyIncome, spent: profile.monthlyIncome, color: .init(Colors.mint)), at: 0)
             }
             if !categories.contains(where: { $0.kind == .savings }) {
-                categories.insert(.init(id: UUID(), kind: .savings, name: "Savings", budget: profile.savings, spent: profile.savings, color: .init(Colors.blueMint)), at: 1)
+                categories.insert(.init(id: UUID(), kind: .savings, name: "Savings per month", budget: profile.savings, spent: profile.savings, color: .init(Colors.blueMint)), at: 1)
             }
             if !categories.contains(where: { $0.kind == .investment }) {
                 categories.insert(.init(id: UUID(), kind: .investment, name: "Investments", budget: profile.investments, spent: 0, color: .init(Colors.periwinkle)), at: 2)

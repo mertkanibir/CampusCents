@@ -24,13 +24,6 @@ struct ProfileView: View {
                     LabeledField("Term", value: $draftProfile.term)
                 }
 
-                Section("Money") {
-                    LabeledNumberField("Monthly Income", value: $draftProfile.monthlyIncome)
-                    LabeledNumberField("Tuition", value: $draftProfile.tuition)
-                    LabeledNumberField("Scholarships/Aid", value: $draftProfile.scholarshipsAid)
-                    LabeledNumberField("Savings Goal", value: $draftProfile.savingsGoal)
-                }
-
                 Section("Planning") {
                     Picker("Budget Style", selection: $draftProfile.budgetStyle) {
                         ForEach(BudgetInput.BudgetStyle.allCases, id: \.self) { style in

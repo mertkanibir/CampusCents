@@ -4,12 +4,13 @@ struct OnboardingView: View {
     @EnvironmentObject var state: AppState
     @State private var page = 0
     @State private var draftProfile: StudentProfile = .sample
+    @State private var wizardStep: SetupStep = .profile
 
     private static let onboardingBackground = Color(red: 0, green: 90/255, blue: 67/255) // #005A43
 
     var body: some View {
         VStack(spacing: 0) {
-            // Page content (conditional to prevent swipe-back)
+            // Page content (conditional to prevent swipe-back) — only the content slides
             Group {
                 switch page {
                 case 0:
@@ -27,7 +28,7 @@ struct OnboardingView: View {
                         tint: Colors.pistachio
                     )
                 default:
-                    ProfileQuickSetupView(profile: $draftProfile) {
+                    ProfileQuickSetupView(profile: $draftProfile, currentStep: $wizardStep, showNavBar: false) {
                         state.completeOnboarding(with: draftProfile)
                     }
                 }
@@ -35,8 +36,8 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .id(page)
             .transition(.asymmetric(
-                insertion: .move(edge: .trailing).combined(with: .opacity),
-                removal: .move(edge: .leading).combined(with: .opacity)
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
             ))
 
             // 3-dot page indicator (intro pages only)
@@ -52,6 +53,7 @@ struct OnboardingView: View {
                 .padding(.bottom, 12)
             }
 
+            // Continue button (intro pages)
             if page < 2 {
                 Button("Continue") {
                     withAnimation(.smooth(duration: 0.4)) {
@@ -62,11 +64,26 @@ struct OnboardingView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 12)
             }
+
+            // Wizard progress + buttons (profile setup) — appear in place like Continue
+            if page == 2 {
+                WizardNavBarView(
+                    profile: $draftProfile,
+                    currentStep: $wizardStep
+                ) {
+                    state.completeOnboarding(with: draftProfile)
+                }
+            }
         }
         .padding(.top, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Self.onboardingBackground)
         .animation(.smooth(duration: 0.4), value: page)
+        .onChange(of: page) { _, newPage in
+            if newPage == 2 {
+                wizardStep = .profile
+            }
+        }
     }
 }
 
@@ -79,7 +96,7 @@ struct OnboardingButtonStyle: ButtonStyle {
             .foregroundStyle(Self.green)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.white.opacity(configuration.isPressed ? 0.9 : 1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(Color.white.opacity(configuration.isPressed ? 0.9 : 1), in: Capsule())
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.smooth(duration: 0.15), value: configuration.isPressed)
     }
@@ -136,16 +153,98 @@ enum SetupStep: Int, CaseIterable {
     case profile, income, housing, food, expenses, goals
 }
 
+private func isWizardStepComplete(profile: StudentProfile, step: SetupStep) -> Bool {
+    switch step {
+    case .profile:
+        return !profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !profile.school.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    case .income:
+        return profile.monthlyIncome > 0
+    case .housing:
+        return profile.rent >= 0 && profile.utilities >= 0
+    case .food:
+        return profile.mealPlan >= 0 && profile.groceries >= 0
+    case .expenses:
+        return profile.transportation >= 0 && profile.subscriptions >= 0 && profile.personal >= 0
+    case .goals:
+        return profile.savingsGoal >= 0 && profile.investments >= 0
+    }
+}
+
+struct WizardNavBarView: View {
+    @Binding var profile: StudentProfile
+    @Binding var currentStep: SetupStep
+    var onComplete: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                ForEach(SetupStep.allCases, id: \.rawValue) { step in
+                    Capsule()
+                        .fill(step.rawValue <= currentStep.rawValue ? Color.white : Color.white.opacity(0.3))
+                        .frame(height: 3)
+                        .animation(.smooth(duration: 0.25), value: currentStep)
+                }
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+
+            HStack(spacing: 12) {
+                if currentStep != .profile {
+                    Button {
+                        if let prev = SetupStep(rawValue: currentStep.rawValue - 1) {
+                            withAnimation(.smooth(duration: 0.25)) { currentStep = prev }
+                        }
+                    } label: {
+                        Label("Back", systemImage: "chevron.left")
+                    }
+                    .buttonStyle(OnboardingButtonStyle())
+                    .frame(width: 100)
+                }
+
+                if currentStep == .goals {
+                    Button("Get Started") {
+                        onComplete()
+                    }
+                    .buttonStyle(OnboardingButtonStyle())
+                } else {
+                    Button("Next") {
+                        if let next = SetupStep(rawValue: currentStep.rawValue + 1) {
+                            withAnimation(.smooth(duration: 0.25)) { currentStep = next }
+                        }
+                    }
+                    .buttonStyle(OnboardingButtonStyle())
+                    .disabled(!isWizardStepComplete(profile: profile, step: currentStep))
+                    .opacity(isWizardStepComplete(profile: profile, step: currentStep) ? 1 : 0.6)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 12)
+        }
+        .foregroundStyle(.white)
+        .tint(.white)
+    }
+}
+
 struct ProfileQuickSetupView: View {
     @Binding var profile: StudentProfile
+    @Binding var currentStep: SetupStep
+    var showNavBar: Bool = true
     var onComplete: (() -> Void)? = nil
 
-    @State private var currentStep: SetupStep = .profile
     @State private var termSeason: String = "Spring"
     @State private var termYear: Int = Calendar.current.component(.year, from: Date())
 
     private static let green = Color(red: 0, green: 90/255, blue: 67/255) // #005A43
     private static let textBoxGreen = Color(red: 11/255, green: 68/255, blue: 50/255) // #0B4432
+
+    init(profile: Binding<StudentProfile>, currentStep: Binding<SetupStep>, showNavBar: Bool = true, onComplete: (() -> Void)? = nil) {
+        self._profile = profile
+        self._currentStep = currentStep
+        self.showNavBar = showNavBar
+        self.onComplete = onComplete
+    }
 
     private var stepContentPadding: EdgeInsets {
         EdgeInsets(top: 20, leading: 24, bottom: 24, trailing: 24)
@@ -198,51 +297,53 @@ struct ProfileQuickSetupView: View {
             .scrollContentBackground(.hidden)
             .environment(\.colorScheme, .light)
 
-            // Progress indicator (above button)
-            HStack(spacing: 8) {
-                ForEach(SetupStep.allCases, id: \.rawValue) { step in
-                    Capsule()
-                        .fill(step.rawValue <= currentStep.rawValue ? Color.white : Color.white.opacity(0.3))
-                        .frame(height: 3)
-                        .animation(.smooth(duration: 0.25), value: currentStep)
+            if showNavBar {
+                // Progress indicator (above button)
+                HStack(spacing: 8) {
+                    ForEach(SetupStep.allCases, id: \.rawValue) { step in
+                        Capsule()
+                            .fill(step.rawValue <= currentStep.rawValue ? Color.white : Color.white.opacity(0.3))
+                            .frame(height: 3)
+                            .animation(.smooth(duration: 0.25), value: currentStep)
+                    }
                 }
-            }
-            .padding(.horizontal, 32)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
+                .padding(.horizontal, 32)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
 
-            // Bottom navigation
-            HStack(spacing: 12) {
-                if currentStep != .profile {
-                    Button {
-                        if let prev = SetupStep(rawValue: currentStep.rawValue - 1) {
-                            withAnimation(.smooth(duration: 0.25)) { currentStep = prev }
+                // Bottom navigation
+                HStack(spacing: 12) {
+                    if currentStep != .profile {
+                        Button {
+                            if let prev = SetupStep(rawValue: currentStep.rawValue - 1) {
+                                withAnimation(.smooth(duration: 0.25)) { currentStep = prev }
+                            }
+                        } label: {
+                            Label("Back", systemImage: "chevron.left")
                         }
-                    } label: {
-                        Label("Back", systemImage: "chevron.left")
+                        .buttonStyle(OnboardingButtonStyle())
+                        .frame(width: 100)
                     }
-                    .buttonStyle(OnboardingButtonStyle())
-                    .frame(width: 100)
-                }
 
-                if currentStep == .goals {
-                    Button("Get Started") {
-                        onComplete?()
-                    }
-                    .buttonStyle(OnboardingButtonStyle())
-                } else {
-                    Button("Next") {
-                        if let next = SetupStep(rawValue: currentStep.rawValue + 1) {
-                            withAnimation(.smooth(duration: 0.25)) { currentStep = next }
+                    if currentStep == .goals {
+                        Button("Get Started") {
+                            onComplete?()
                         }
+                        .buttonStyle(OnboardingButtonStyle())
+                    } else {
+                        Button("Next") {
+                            if let next = SetupStep(rawValue: currentStep.rawValue + 1) {
+                                withAnimation(.smooth(duration: 0.25)) { currentStep = next }
+                            }
+                        }
+                        .buttonStyle(OnboardingButtonStyle())
+                        .disabled(!isCurrentStepComplete)
+                        .opacity(isCurrentStepComplete ? 1 : 0.6)
                     }
-                    .buttonStyle(OnboardingButtonStyle())
-                    .disabled(!isCurrentStepComplete)
-                    .opacity(isCurrentStepComplete ? 1 : 0.6)
                 }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 12)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 12)
         }
         .foregroundStyle(.white)
         .tint(.white)
@@ -275,7 +376,7 @@ struct ProfileQuickSetupView: View {
                 LabeledField("Name", value: $profile.name, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
                 LabeledField("School", value: $profile.school, labelColor: .white, textColor: .white, backgroundColor: Self.textBoxGreen)
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Term")
+                    Text("Date of Graduation")
                         .font(.footnote)
                         .foregroundStyle(.white)
                     HStack(spacing: 12) {

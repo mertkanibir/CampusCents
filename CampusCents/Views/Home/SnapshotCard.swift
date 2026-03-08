@@ -21,16 +21,32 @@ struct SnapshotCard: View {
         [Colors.periwinkle, Colors.mint, Colors.peach]
     }
 
+    private var titleGradientStartPoint: UnitPoint {
+        let radians = rainbowPhase * .pi / 180
+        return UnitPoint(
+            x: 0.5 + 0.5 * cos(radians),
+            y: 0.5 + 0.18 * sin(radians)
+        )
+    }
+
+    private var titleGradientEndPoint: UnitPoint {
+        let radians = (rainbowPhase + 180) * .pi / 180
+        return UnitPoint(
+            x: 0.5 + 0.5 * cos(radians),
+            y: 0.5 + 0.18 * sin(radians)
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Label("AI Overview", systemImage: "sparkles.rectangle.stack")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(
-                        AngularGradient(
+                        LinearGradient(
                             colors: rainbowColors,
-                            center: .center,
-                            angle: .degrees(rainbowPhase)
+                            startPoint: titleGradientStartPoint,
+                            endPoint: titleGradientEndPoint
                         )
                     )
             }

@@ -132,6 +132,7 @@ struct ProfileQuickSetupView: View {
                 VStack(spacing: 10) {
                     LabeledNumberField("Income", value: $profile.monthlyIncome, labelColor: .white)
                 }
+                LabeledNumberField("Investments", value: $profile.investments, labelColor: .white)
 
                 sectionHeader("Housing")
                 VStack(spacing: 10) {

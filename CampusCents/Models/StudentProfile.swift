@@ -6,6 +6,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
     var school: String
     var term: String
     var monthlyIncome: Double
+    var investments: Double
     var scholarshipsAid: Double
     var tuition: Double
     var rent: Double
@@ -26,6 +27,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         case school
         case term
         case monthlyIncome
+        case investments
         case scholarshipsAid
         case tuition
         case rent
@@ -53,6 +55,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school: "Binghamton University",
         term: "Spring 2028",
         monthlyIncome: 700,
+        investments: 200,
         scholarshipsAid: 5000,
         tuition: 6800,
         rent: 900,
@@ -74,6 +77,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school: String,
         term: String,
         monthlyIncome: Double,
+        investments: Double,
         scholarshipsAid: Double,
         tuition: Double,
         rent: Double,
@@ -93,6 +97,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         self.school = school
         self.term = term
         self.monthlyIncome = monthlyIncome
+        self.investments = investments
         self.scholarshipsAid = scholarshipsAid
         self.tuition = tuition
         self.rent = rent
@@ -115,6 +120,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         school = try container.decode(String.self, forKey: .school)
         term = try container.decode(String.self, forKey: .term)
         monthlyIncome = try container.decode(Double.self, forKey: .monthlyIncome)
+        investments = try container.decode(Double.self, forKey: .investments)
         scholarshipsAid = try container.decode(Double.self, forKey: .scholarshipsAid)
         tuition = try container.decode(Double.self, forKey: .tuition)
         rent = try container.decode(Double.self, forKey: .rent)
@@ -137,6 +143,7 @@ struct StudentProfile: Identifiable, Codable, Equatable {
         try container.encode(school, forKey: .school)
         try container.encode(term, forKey: .term)
         try container.encode(monthlyIncome, forKey: .monthlyIncome)
+        try container.encode(investments, forKey: .investments)
         try container.encode(scholarshipsAid, forKey: .scholarshipsAid)
         try container.encode(tuition, forKey: .tuition)
         try container.encode(rent, forKey: .rent)

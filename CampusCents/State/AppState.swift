@@ -165,6 +165,7 @@ extension AppState {
             personal: profile.personal,
             savingsGoal: profile.savingsGoal,
             monthlyIncome: profile.monthlyIncome,
+            investments: profile.investments,
             budgetStyle: profile.budgetStyle,
             housingType: profile.housingType
         )

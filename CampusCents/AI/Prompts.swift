@@ -27,6 +27,7 @@ enum Prompts: Sendable {
         - Personal spending: \(input.personal.formatted(.currency(code: "USD")))
         - Savings goal: \(input.savingsGoal.formatted(.currency(code: "USD")))
         - Monthly income: \(input.monthlyIncome.formatted(.currency(code: "USD")))
+        - Investments: \(input.investments.formatted(.currency(code: "USD")))
         - Budget style: \(input.budgetStyle.displayName)
         - Housing type: \(input.housingType.displayName)
 
@@ -56,7 +57,7 @@ enum Prompts: Sendable {
         - Personal spending: \(input.snapshot.personal.formatted(.currency(code: "USD")))
         - Savings goal: \(input.snapshot.savingsGoal.formatted(.currency(code: "USD")))
         - Monthly income: \(input.snapshot.monthlyIncome.formatted(.currency(code: "USD")))
-
+        - Investments: \(input.snapshot.monthlyIncome.formatted(.currency(code: "USD")))
         Output constraints:
         - Focus on runway, flexibility, and tradeoff framing.
         - Keep summary under 2 sentences.

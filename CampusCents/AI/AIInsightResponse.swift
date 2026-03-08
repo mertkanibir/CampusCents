@@ -37,6 +37,7 @@ struct BudgetInput: Sendable, Equatable {
     var personal: Double
     var savingsGoal: Double
     var monthlyIncome: Double
+    var investments: Double
     var budgetStyle: BudgetStyle
     var housingType: HousingType
 }

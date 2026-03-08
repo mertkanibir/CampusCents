@@ -6,7 +6,6 @@ An intelligent budgeting app for college students. Track spending, plan your mon
 - **Dashboard** - Budget health score, spending vs. remaining totals, and an AI-powered snapshot of your finances  
 - **Budget breakdown** - Category-by-category tracking (tuition, rent, meal plan, groceries, transport, subscriptions, personal, and more)  
 - **Affordability checker** - Enter an item and price to see how it affects your budget, with AI impact analysis  
-- **Scenario comparison** - Compare budget alternatives (e.g., on-campus vs off-campus, with or without subscriptions)  
 - **Smart insights** - On-device AI (iOS 26+, Iphone 15 Pro or Later) for personalized budget reflections. Rule-based fallback when Apple Foundation Models is unavailable. 
 - **Transaction logging** - Add expenses by category and date, with quick access from the dashboard  
 

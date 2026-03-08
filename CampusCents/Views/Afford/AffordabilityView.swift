@@ -28,22 +28,11 @@ struct AffordabilityView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-
-                Button("Compare Scenarios") {
-                    showScenarioSheet = true
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Colors.periwinkle)
-
                 Spacer()
             }
             .padding()
             .navigationTitle("Affordability")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showScenarioSheet) {
-                ScenarioSheet()
-                    .environmentObject(state)
-            }
         }
     }
 

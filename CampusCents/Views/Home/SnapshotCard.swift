@@ -8,6 +8,7 @@ struct SnapshotCard: View {
     @State private var availability: AIStatus = .frameworkUnavailable
     @State private var isLoading = false
     @State private var rainbowPhase = 0.0
+    @State private var titlePulse = false
 
     private var key: String {
         "\(state.profile.id.uuidString)-\(state.total)-\(state.spent)-\(state.transactions.count)"
@@ -49,6 +50,14 @@ struct SnapshotCard: View {
                             endPoint: titleGradientEndPoint
                         )
                     )
+                    .scaleEffect(titlePulse ? 1.04 : 0.98)
+                    .offset(y: titlePulse ? -2 : 2)
+                    .shadow(
+                        color: Colors.periwinkle.opacity(colorScheme == .dark ? 0.3 : 0.18),
+                        radius: titlePulse ? 12 : 6,
+                        y: titlePulse ? 4 : 1
+                    )
+                    .symbolEffect(.bounce, options: .repeating.speed(0.8), value: titlePulse)
             }
 
             if isLoading && response == nil {
@@ -111,6 +120,9 @@ struct SnapshotCard: View {
         .onAppear {
             withAnimation(.linear(duration: 12).repeatForever(autoreverses: false)) {
                 rainbowPhase = 360
+            }
+            withAnimation(.easeInOut(duration: 1.15).repeatForever(autoreverses: true)) {
+                titlePulse = true
             }
         }
         .task(id: key) {
